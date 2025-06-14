@@ -18,46 +18,50 @@ export default function EmotionCanvas() {
   const router = useRouter()
 
   useEffect(() => {
-    // 1. p5.js 로드
     const loadP5 = () =>
-      new Promise((resolve) => {
+      new Promise((resolve, reject) => {
         const script = document.createElement('script')
         script.src = 'https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js'
         script.onload = resolve
+        script.onerror = reject
         document.body.appendChild(script)
       })
-
-    // 2. p5.sound.js 로드
+    
     const loadP5Sound = () =>
-      new Promise((resolve) => {
+      new Promise((resolve, reject) => {
         const script = document.createElement('script')
         script.src = 'https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/addons/p5.sound.min.js'
         script.onload = resolve
+        script.onerror = reject
         document.body.appendChild(script)
       })
-
-    // 3. sketch.js 한 번만 로드
+    
     const loadSketchOnce = () =>
-      new Promise((resolve) => {
+      new Promise((resolve, reject) => {
         const alreadyLoaded = document.querySelector('script[src="/sketch.js"]')
         if (alreadyLoaded) {
           resolve(true)
           return
         }
-
+    
         const script = document.createElement('script')
         script.src = '/sketch.js'
         script.onload = resolve
+        script.onerror = reject
         document.body.appendChild(script)
       })
-
-    // 순서대로 로딩
+    
     const loadAll = async () => {
-      await loadP5()
-      await loadP5Sound()
-      await loadSketchOnce()
-      setLoaded(true)
+      try {
+        await loadP5()
+        await loadP5Sound()
+        await loadSketchOnce()
+        setLoaded(true)
+      } catch (e) {
+        console.error('Script load error:', e)
+      }
     }
+    
 
     loadAll()
 
