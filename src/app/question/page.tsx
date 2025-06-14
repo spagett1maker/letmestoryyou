@@ -188,9 +188,9 @@ export default function Home() {
 
           <div className="mb-6">
             <textarea
-              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-white rounded-lg resize-none h-36 focus:outline-none"
+              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-white rounded-lg resize-none h-52 focus:outline-none"
               placeholder={
-                '잠깐 당신의 이야기를 빌려주세요.\n지금 떠오르는 것이 감정인지 잘 모르겠다면, \n괜찮습니다. 그냥 지금 떠오른 생각을 적어주세요.'
+                '지금 이 질문을 보고 떠오르는 감정이나 생각이 있다면, \n부담 없이 적어주세요. 꼭 정답일 필요 없어요.\n감정이 잘 떠오르지 않아도 괜찮습니다.\n그냥 지금 마음에 남는 단어나 문장, 혹은 아무 생각이라도 좋아요.\n이 공간은 당신의 감정을 잠시 머물게 하고, \n흘려보내는 연습을 돕습니다.'
               }
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
