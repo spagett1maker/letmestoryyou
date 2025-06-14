@@ -1,0 +1,91 @@
+/* styles/EllipseTextToggle.css */
+body {
+  background: #121212;
+  color: white;
+  font-family: 'DM Sans', sans-serif;
+  overflow-y: auto;
+  margin: 0;
+  z-index:0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.ellipse {
+  position: relative;
+  width: min(85vw, 85vh);
+}
+
+.ellipse svg {
+  transform: rotate(-40deg);
+  width: 100%;
+  height: 100%;
+}
+
+.ellipse svg text {
+  fill: #fff;
+}
+
+.center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: clamp(16px, 2.5vw, 22px);
+  line-height: 1.6;
+  padding: 2vw;
+  -webkit-text-stroke: 1px white;
+  text-shadow: 0 0 1px white, 1px 1px 1px white, -1px -1px 1px white;
+  background-color: transparent;
+}
+
+.toggle {
+  margin-top: 4vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 60px;
+  height: 34px;
+  background: #ccc;
+  border-radius: 34px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.toggle-switch .knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 28px;
+  height: 28px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-input:checked + .toggle-switch {
+  background: #f9a825;
+}
+
+.toggle-input:checked + .toggle-switch .knob {
+  transform: translateX(26px);
+}
+
+.toggle-label {
+  margin-top: 1em;
+  font-size: clamp(14px, 1.2vw, 18px);
+}
