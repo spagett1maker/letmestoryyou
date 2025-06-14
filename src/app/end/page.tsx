@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
 
+declare global {
+  interface Window {
+    soundOut?: {
+      stop: () => void
+    }
+  }
+}
+
+
 export default function EmotionCanvas() {
   const [loaded, setLoaded] = useState(false)
   const router = useRouter()
