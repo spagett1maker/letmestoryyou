@@ -134,7 +134,7 @@ export default function EmotionCanvas() {
         <div className="flex justify-center gap-3 mt-5 pointer-events-auto">
           <button
             id="stayButton"
-            className="px-6 py-3 text-red-500 text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
+            className="px-6 py-3 text-white text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
             onClick={handleStayClick}
           >
             머물다가기
