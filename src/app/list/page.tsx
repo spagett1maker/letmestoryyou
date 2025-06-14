@@ -418,7 +418,7 @@ export default function AnswerParticles() {
             title={particle.isOld ? "Old answer (1+ day)" : "Recent answer"}
           >
             <div
-              className={`w-full h-full rounded-full ${particle.isOld ? "bg-gray-400" : "bg-white"}`}
+              className={`w-full h-full rounded-full ${particle.isOld ? "bg-gray-100" : "bg-white"}`}
               style={{ opacity: particle.opacity }}
             />
           </div>
