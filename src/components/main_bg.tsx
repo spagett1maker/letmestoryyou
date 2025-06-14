@@ -28,7 +28,7 @@ export default function MainBg() {
     target.insertAdjacentHTML(
       'beforeend',
       `
-      <text>
+      <text className="cursor-none">
         <textPath href='#${pathId}' startOffset="0%">
           이 공간은 당신의 감정을 잠시 머물게하고, 흘려보내는 연습을 돕습니다. <tspan font-style="italic">Let Me Story You</tspan>
         </textPath>

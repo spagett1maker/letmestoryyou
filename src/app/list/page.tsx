@@ -462,7 +462,7 @@ export default function AnswerParticles() {
             </div>
 
             {/* Panel Content */}
-            <div className="p-3 h-full overflow-hidden">
+            <div className="p-3 h-full overflow-y-auto">
               {panel.isOld ? (
                 // Message for old answers
                 <div className="bg-yellow-900/20 border border-yellow-600 rounded p-4 h-full flex flex-col items-center justify-center text-center">
@@ -471,9 +471,11 @@ export default function AnswerParticles() {
                   <p className="text-gray-300 text-xs mb-2">
                     This answer was created more than a day ago and is no longer visible.
                   </p>
-                  <p className="text-gray-400 text-xs">
-                    Created: {new Date(panel.answer.created_at).toLocaleDateString()}
-                  </p>
+                  {!panel.isDummy && panel.answer?.created_at && (
+                    <p className="text-gray-400 text-xs">
+                      Created: {new Date(panel.answer.created_at).toLocaleDateString()}
+                    </p>
+                  )}
                 </div>
               ) : (
                 // Content for recent answers
@@ -503,13 +505,13 @@ export default function AnswerParticles() {
               )}
 
               {/* Control Buttons */}
-              <div className="flex gap-1 mt-3">
+              {/* <div className="flex gap-1 mt-3">
                 <div className="w-5 h-5 bg-orange-500 rounded border border-gray-500 cursor-pointer hover:bg-orange-400" />
                 <div className="w-5 h-5 bg-blue-500 rounded border border-gray-500 cursor-pointer hover:bg-blue-400" />
                 <div className="w-5 h-5 bg-gray-600 rounded border border-gray-500 cursor-pointer hover:bg-gray-500" />
                 <div className="flex-1" />
                 <Settings className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white" />
-              </div>
+              </div> */}
             </div>
           </motion.div>
         ))}

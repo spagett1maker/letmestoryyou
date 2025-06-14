@@ -14,6 +14,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  cursor: none;
 }
 
 .ellipse {
@@ -40,9 +41,6 @@ body {
   font-size: clamp(16px, 2.5vw, 22px);
   line-height: 1.6;
   padding: 2vw;
-  -webkit-text-stroke: 1px white;
-  text-shadow: 0 0 1px white, 1px 1px 1px white, -1px -1px 1px white;
-  background-color: transparent;
 }
 
 .toggle {
