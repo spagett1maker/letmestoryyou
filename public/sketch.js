@@ -5,6 +5,9 @@ let syllable_1_5;
 let syllable_2_5;
 let syllable_1_4;
 
+// if (window.hasLoadedSketch) return;
+window.hasLoadedSketch = true;
+
 function preload() {
   // ✅ 로컬 sound.mp3 파일 사용
   syllable_1_1 = loadSound("/sing.mp3");
@@ -23,6 +26,13 @@ function setup() {
       theta: random(0, 360)
     };
   }
+
+  window.soundOut = {
+    stop: () => {
+      syllable_1_1.stop();
+      syllable_2_6 = false;
+    }
+  };
 }
 
 function draw() {
@@ -76,7 +86,18 @@ function checkPlay() {
 }
 
 function mousePressed() {
+  // ✅ iOS 대응: AudioContext resume
+  if (getAudioContext().state !== "running") {
+    getAudioContext().resume();
+  }
+
   syllable_2_6 = !syllable_2_6;
+
+  if (syllable_2_6 && !syllable_1_1.isPlaying()) {
+    syllable_1_1.play();
+  } else if (!syllable_2_6 && syllable_1_1.isPlaying()) {
+    syllable_1_1.pause();
+  }
 }
 
 function keyPressed() {

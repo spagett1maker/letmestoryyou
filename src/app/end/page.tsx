@@ -27,8 +27,6 @@ export default function EmotionCanvas() {
         document.body.appendChild(script)
       })
     
-    alert('1')
-
     const loadP5Sound = () =>
       new Promise((resolve, reject) => {
         const script = document.createElement('script')
@@ -38,8 +36,6 @@ export default function EmotionCanvas() {
         document.body.appendChild(script)
       })
 
-    alert('2')
-    
     const loadSketchOnce = () =>
       new Promise((resolve, reject) => {
         const alreadyLoaded = document.querySelector('script[src="/sketch.js"]')
@@ -55,8 +51,6 @@ export default function EmotionCanvas() {
         document.body.appendChild(script)
       })
 
-    alert('3')
-    
     const loadAll = async () => {
       try {
         await loadP5()
@@ -67,8 +61,6 @@ export default function EmotionCanvas() {
         console.error('Script load error:', e)
       }
     }
-
-    alert('4')
 
     loadAll()
 
@@ -97,6 +89,17 @@ export default function EmotionCanvas() {
     router.push('/list')
   }
 
+    // stayButton 클릭 시 오디오 context resume
+  const handleStayClick = () => {
+    if (typeof window !== 'undefined') {
+      const ctx = window.getAudioContext?.() || (window as any).getAudioContext?.();
+      if (ctx?.state === 'suspended') {
+        ctx.resume()
+      }
+    }
+  }
+
+
   return (
     <>
       <Head>
@@ -111,7 +114,7 @@ export default function EmotionCanvas() {
 
       {!loaded && (
         <div className="absolute inset-0 flex items-center justify-center text-white bg-black z-50">
-          loading...
+          loading...!
         </div>
       )}
 
@@ -128,7 +131,8 @@ export default function EmotionCanvas() {
         <div className="flex justify-center gap-3 mt-5 pointer-events-auto">
           <button
             id="stayButton"
-            className="px-6 py-3 text-white text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
+            className="px-6 py-3 text-red-500 text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
+            onClick={handleStayClick}
           >
             머물다가기
           </button>
