@@ -27,6 +27,8 @@ export default function EmotionCanvas() {
         document.body.appendChild(script)
       })
     
+    alert('1')
+
     const loadP5Sound = () =>
       new Promise((resolve, reject) => {
         const script = document.createElement('script')
@@ -35,6 +37,8 @@ export default function EmotionCanvas() {
         script.onerror = reject
         document.body.appendChild(script)
       })
+
+    alert('2')
     
     const loadSketchOnce = () =>
       new Promise((resolve, reject) => {
@@ -50,6 +54,8 @@ export default function EmotionCanvas() {
         script.onerror = reject
         document.body.appendChild(script)
       })
+
+    alert('3')
     
     const loadAll = async () => {
       try {
@@ -61,7 +67,8 @@ export default function EmotionCanvas() {
         console.error('Script load error:', e)
       }
     }
-    
+
+    alert('4')
 
     loadAll()
 
