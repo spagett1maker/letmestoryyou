@@ -11,6 +11,8 @@ declare global {
     }
   }
 }
+declare function getAudioContext(): AudioContext;
+
 
 
 export default function EmotionCanvas() {
@@ -92,12 +94,13 @@ export default function EmotionCanvas() {
     // stayButton 클릭 시 오디오 context resume
   const handleStayClick = () => {
     if (typeof window !== 'undefined') {
-      const ctx = window.getAudioContext?.() || (window as any).getAudioContext?.();
+      const ctx = getAudioContext(); // ✅ 전역 함수로 호출
       if (ctx?.state === 'suspended') {
-        ctx.resume()
+        ctx.resume();
       }
     }
-  }
+  };
+    
 
 
   return (
