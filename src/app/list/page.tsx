@@ -467,17 +467,18 @@ export default function AnswerParticles() {
                 // Message for old answers
                 <div className="py-8 bg-yellow-900/20 border border-yellow-600 rounded p-4 max-h-full w-full flex flex-col items-center justify-center text-center">
                   <AlertCircle className="w-6 h-6 text-yellow-400 mb-2" />
-                  <h3 className="text-yellow-400 font-semibold mb-6 text-sm">
+                  <h3 className="text-yellow-400 font-semibold mb-4 text-sm">
                     {/* Content Not Visible */}
                     404 not found
                   </h3>
-                  <p className="text-gray-300 text-xs mb-4">
-                    감정은 한 번 말해졌고, 전송됨으로써 놓아졌으며, 24시간이 지나 삭제 되었습니다.
-                    다시 확인되지 않도록, 다시 붙들리지 않도록, 감정은 흘러갑니다.
-                  </p>
-                  <p className="text-gray-300 text-[8px] mb-2">
+                  {/* <p className="text-gray-300 text-[10px] mb-2">
                     This answer was created more than a day ago and is no longer visible.
+                  </p> */}
+                  <p className="text-gray-300 text-sm mb-4">
+                    감정은 한 번 말해졌고, 전송됨으로써 놓아졌으며, <br/> 24시간이 지나 삭제 되었습니다. <br/>
+                    다시 확인되지 않도록, 다시 붙들리지 않도록,<br/> 감정은 흘러갑니다.
                   </p>
+                  
                   {!panel.isDummy && panel.answer?.created_at && (
                     <p className="text-gray-400 text-xs">
                       Created: {new Date(panel.answer.created_at).toLocaleDateString()}
