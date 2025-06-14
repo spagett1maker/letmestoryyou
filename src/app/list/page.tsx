@@ -5,7 +5,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Settings, Play, Pause, RotateCcw, Clock, AlertCircle, Smartphone, Monitor } from "lucide-react"
+import { X, Play, Pause, RotateCcw, Clock, AlertCircle, Smartphone, Monitor } from "lucide-react"
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 

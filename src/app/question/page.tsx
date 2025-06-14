@@ -2,7 +2,6 @@
 
 import { useState , useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 
 interface Question {
   id: string,
@@ -198,16 +197,16 @@ export default function Home() {
           </div>
 
           <button className="w-full py-3 mb-12 text-white bg-black/80 rounded-full" onClick={handleSubmit} disabled={loading}>
-            {loading ? '전송중...' : '전송'}
+            {loading ? '...' : '나의 이야기 건네기'}
           </button>
 
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <Link href="/about" className="flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5 3L19 12L5 21V3Z" fill="black" />
               </svg>
             </Link>
-          </div>
+          </div> */}
         </div>
       }
       <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/80/ rounded-lg/-4">
