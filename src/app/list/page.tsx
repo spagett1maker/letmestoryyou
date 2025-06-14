@@ -392,7 +392,7 @@ export default function AnswerParticles() {
           </div>
           <div onClick={() => {
             setIsAnimating(false) // particle animation 멈춤
-            router.push("/")
+            router.push("/question")
           }} className="cursor-pointer absolute bottom-4 right-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
             <div>다음 질문</div>
           </div>

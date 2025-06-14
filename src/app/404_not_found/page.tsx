@@ -169,7 +169,7 @@ export default function Home() {
     setLoading(false)
 
     if (res.ok) {
-      router.push(`/found`)
+      router.push(`/end?key=${user_id}`)
     } else {
       alert('답변 저장 실패: ' + data.error)
     }
