@@ -168,7 +168,8 @@ export default function Home() {
     setLoading(false)
 
     if (res.ok) {
-      router.push(`/end?key=${user_id}`)
+      //router.push(`/end?key=${user_id}`)
+      window.location.href = '/end'
     } else {
       alert('답변 저장 실패: ' + data.error)
     }
