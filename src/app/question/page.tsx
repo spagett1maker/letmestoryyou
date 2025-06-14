@@ -197,7 +197,7 @@ export default function Home() {
           </div>
 
           <button className="w-full py-3 mb-12 text-white bg-black/80 rounded-full" onClick={handleSubmit} disabled={loading}>
-            {loading ? '...' : '나의 이야기 건네기'}
+            {loading ? '이야기 전송중...' : '나의 이야기 건네기'}
           </button>
 
           {/* <div className="flex justify-center">
