@@ -60,7 +60,9 @@ export default function EmotionCanvas() {
           let waveform: any
 
           p.preload = () => {
-            sound = p.loadSound('/sing.mp3')
+            sound = p.loadSound('/sing.mp3', () => {
+              console.log("🎵 사운드 로드 완료")
+            })
           }
 
           p.setup = () => {
@@ -147,26 +149,26 @@ export default function EmotionCanvas() {
           //   }
           // }
           p.mousePressed = () => {
-            // 사용자 입력 발생 시 오디오 컨텍스트 활성화
+            // AudioContext 재개 (모바일 대응)
             const ctx = p.getAudioContext()
             if (ctx.state !== 'running') {
-              ctx.resume().then(() => {
-                isPlaying = !isPlaying
-                if (isPlaying) {
-                  sound.play()
-                } else {
-                  sound.pause()
-                }
-              })
-            } else {
-              isPlaying = !isPlaying
-              if (isPlaying) {
-                sound.play()
-              } else {
-                sound.pause()
-              }
+              ctx.resume()
+            }
+          
+            if (!sound.isLoaded()) {
+              console.log("⏳ 사운드 아직 로드 안됨")
+              return // 사운드 준비 안 되면 무시
+            }
+          
+            isPlaying = !isPlaying
+          
+            if (isPlaying && !sound.isPlaying()) {
+              sound.play()
+            } else if (!isPlaying && sound.isPlaying()) {
+              sound.pause()
             }
           }
+          
           
 
           p.keyPressed = () => {
