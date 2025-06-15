@@ -2,7 +2,6 @@
 
 import { useState , useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 
 interface Question {
   id: string,
@@ -169,7 +168,8 @@ export default function Home() {
     setLoading(false)
 
     if (res.ok) {
-      router.push(`/end?key=${user_id}`)
+      //router.push(`/end?key=${user_id}`)
+      window.location.href = '/my'
     } else {
       alert('답변 저장 실패: ' + data.error)
     }
@@ -188,30 +188,33 @@ export default function Home() {
 
           <div className="mb-6">
             <textarea
-              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-white rounded-lg resize-none h-36 focus:outline-none"
+              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-white rounded-lg resize-none h-52 focus:outline-none"
               placeholder={
-                '잠깐 당신의 이야기를 빌려주세요.\n지금 떠오르는 것이 감정인지 잘 모르겠다면, \n괜찮습니다. 그냥 지금 떠오른 생각을 적어주세요.'
+                '지금 이 질문을 보고 떠오르는 감정이나 생각이 있다면, \n부담 없이 적어주세요. 꼭 정답일 필요 없어요.\n감정이 잘 떠오르지 않아도 괜찮습니다.\n그냥 지금 마음에 남는 단어나 문장, 혹은 아무 생각이라도 좋아요.\n이 공간은 당신의 감정을 잠시 머물게 하고, \n흘려보내는 연습을 돕습니다.'
               }
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
             />
           </div>
 
-          <button className="w-full py-3 mb-12 text-white bg-black rounded-full" onClick={handleSubmit} disabled={loading}>
-            {loading ? '전송중...' : '전송'}
+          <button className="w-full py-3 mb-12 text-white bg-black/80 rounded-full" onClick={handleSubmit} disabled={loading}>
+            {loading ? '이야기 전송중...' : '나의 이야기 건네기'}
           </button>
 
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <Link href="/about" className="flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5 3L19 12L5 21V3Z" fill="black" />
               </svg>
             </Link>
-          </div>
+          </div> */}
         </div>
       }
-      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2">
-        <p className="text-white text-lg font-light tracking-wide">마음이 닿는 점을 눌러주세요.</p>
+      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/80/ rounded-lg/-4">
+        <p className="text-white text-lg font-light tracking-wide text-center">
+          당신이 남긴 감정을 다시 보고 싶다면, 한 번 더 이야기해 주세요. <br />
+          당신의 응답이 열쇠가 됩니다.
+        </p>
       </div>
     </div>
   )

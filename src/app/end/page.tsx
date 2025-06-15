@@ -188,7 +188,8 @@ export default function EmotionCanvas() {
     if (window.soundOut && typeof window.soundOut.stop === 'function') {
       window.soundOut.stop()
     }
-    router.push('/list')
+    //router.push('/list')
+    window.location.href = '/list'
   }
 
   const handleStayClick = () => {
