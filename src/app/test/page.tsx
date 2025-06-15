@@ -35,7 +35,7 @@ export default function EmotionCanvas() {
       try {
         await loadScript('https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js')
         await loadScript('https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/addons/p5.sound.min.js')
-        await loadScript('/sketch.js')
+        await loadScript('/sketch_new.js')
         setLoaded(true)
       } catch (e) {
         console.error('Script load error:', e)
