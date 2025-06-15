@@ -214,25 +214,50 @@ export default function AnswerParticles() {
 
       console.log('bonus_user_id222', bonus_user_id)
       if (bonus_user_id) {
-        const myParticle = (allParticles as Particle[]).find(
-          (p) => !p.isDummy && p.answer.user_id === bonus_user_id
+        // const myParticle = (allParticles as Particle[]).find(
+        //   (p) => !p.isDummy && p.answer.user_id === bonus_user_id
+        // )
+        // if (myParticle) {
+        //   const panelWidth = isMobile ? Math.min(350, dimensions.width - 20) : 400
+        //   const panelHeight = isMobile ? Math.min(280, dimensions.height - 100) : 300
+      
+        //   const newPanel: Panel = {
+        //     id: Date.now(),
+        //     x: Math.max(10, Math.min(dimensions.width - panelWidth - 10, myParticle.x - panelWidth / 2)),
+        //     y: Math.max(10, Math.min(dimensions.height - panelHeight - 10, myParticle.y - panelHeight / 2)),
+        //     answer: myParticle.answer,
+        //     isOld: myParticle.isOld,
+        //     isDummy: myParticle.isDummy,
+        //   }
+      
+        //   setPanels((prev) => [...prev, newPanel])
+        //   //setPanels([newPanel])
+        // }
+        // 여러 개의 myParticle 탐색
+        const existingPanelIds = new Set(panels.map((p) => p.answer.id))
+
+        const myParticles = allParticles.filter(
+          (p) => !p.isDummy && (p as Particle).answer.user_id === bonus_user_id && !p.isOld && !existingPanelIds.has(p.answer.id)
         )
-        if (myParticle) {
-          const panelWidth = isMobile ? Math.min(350, dimensions.width - 20) : 400
-          const panelHeight = isMobile ? Math.min(280, dimensions.height - 100) : 300
-      
-          const newPanel: Panel = {
-            id: Date.now(),
-            x: Math.max(10, Math.min(dimensions.width - panelWidth - 10, myParticle.x - panelWidth / 2)),
-            y: Math.max(10, Math.min(dimensions.height - panelHeight - 10, myParticle.y - panelHeight / 2)),
-            answer: myParticle.answer,
-            isOld: myParticle.isOld,
-            isDummy: myParticle.isDummy,
-          }
-      
-          //setPanels((prev) => [...prev, newPanel])
-          setPanels([newPanel])
+
+        if (myParticles.length > 0) {
+          const newPanels = myParticles.map((p) => {
+            const panelWidth = isMobile ? Math.min(350, dimensions.width - 20) : 400
+            const panelHeight = isMobile ? Math.min(280, dimensions.height - 100) : 300
+
+            return {
+              id: Date.now() + Math.random(), // 중복 방지용 ID
+              x: Math.max(10, Math.min(dimensions.width - panelWidth - 10, p.x - panelWidth / 2)),
+              y: Math.max(10, Math.min(dimensions.height - panelHeight - 10, p.y - panelHeight / 2)),
+              answer: (p as Particle).answer,
+              isOld: p.isOld,
+              isDummy: false,
+            }
+          })
+
+          setPanels((prev) => [...prev, ...newPanels])
         }
+
       }
       
 
@@ -520,7 +545,7 @@ export default function AnswerParticles() {
               width: panelWidth,
               height: panelHeight,
             }}
-            drag={!isMobile}
+            drag={true}
             dragMomentum={false}
           >
             {/* Panel Header */}

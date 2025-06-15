@@ -501,7 +501,7 @@ export default function AnswerParticles() {
               width: panelWidth,
               height: panelHeight,
             }}
-            drag={!isMobile}
+            drag={true}
             dragMomentum={false}
           >
             {/* Panel Header */}
