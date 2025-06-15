@@ -6,7 +6,7 @@ import type React from "react"
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Play, Pause, RotateCcw, Clock, AlertCircle, Smartphone, Monitor } from "lucide-react"
+import { X, Play, Pause, RotateCcw, Clock, AlertCircle, Monitor } from "lucide-react"
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
@@ -18,6 +18,7 @@ const supabase = createClient(
 interface Answer {
   id: string
   created_at: string
+  user_id: string
   answer_text: string
   questions: {
     question_text: string
@@ -100,6 +101,7 @@ export default function AnswerParticles() {
       userId = crypto.randomUUID()
       localStorage.setItem('bonus_user_id', userId)
       console.log('✅ user_id 생성됨:', userId)
+      console.log('✅ bonus_user_id 생성됨:', bonus_user_id)
     } else {
       console.log('🔁 기존 user_id 사용:', userId)
     }
@@ -110,7 +112,7 @@ export default function AnswerParticles() {
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768
+      const mobile = window.innerWidth < 1000
       setIsMobile(mobile)
       setDimensions({ width: window.innerWidth, height: window.innerHeight })
     }
@@ -168,7 +170,7 @@ export default function AnswerParticles() {
       setLoading(true)
       const { data, error } = await supabase
         .from("answers")
-        .select("id, answer_text, created_at, questions(question_text, question_number)")
+        .select("id, user_id,answer_text, created_at, questions(question_text, question_number)")
         .order("created_at", { ascending: false })
 
       if (error) throw error
@@ -203,11 +205,36 @@ export default function AnswerParticles() {
       }
 
       // Add dummy particles (15-25 random count)
-      const dummyCount = Math.floor(Math.random() * 3000) + 20
+      //const dummyCount = Math.floor(Math.random() * 3000) + 20
+      const dummyCount = 1000
       const dummyParticles = generateDummyParticles(dummyCount)
       allParticles = [...allParticles, ...dummyParticles]
 
       setParticles(allParticles as Particle[])
+
+      console.log('bonus_user_id222', bonus_user_id)
+      if (bonus_user_id) {
+        const myParticle = (allParticles as Particle[]).find(
+          (p) => !p.isDummy && p.answer.user_id === bonus_user_id
+        )
+        if (myParticle) {
+          const panelWidth = isMobile ? Math.min(350, dimensions.width - 20) : 400
+          const panelHeight = isMobile ? Math.min(280, dimensions.height - 100) : 300
+      
+          const newPanel: Panel = {
+            id: Date.now(),
+            x: Math.max(10, Math.min(dimensions.width - panelWidth - 10, myParticle.x - panelWidth / 2)),
+            y: Math.max(10, Math.min(dimensions.height - panelHeight - 10, myParticle.y - panelHeight / 2)),
+            answer: myParticle.answer,
+            isOld: myParticle.isOld,
+            isDummy: myParticle.isDummy,
+          }
+      
+          setPanels((prev) => [...prev, newPanel])
+        }
+      }
+      
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch answers")
     } finally {
@@ -216,10 +243,10 @@ export default function AnswerParticles() {
   }
 
   useEffect(() => {
-    if (dimensions.width > 0) {
+    if (dimensions.width > 0 && bonus_user_id) {
       fetchAnswers()
     }
-  }, [dimensions, isMobile])
+  }, [dimensions, isMobile, bonus_user_id])
 
   // Animation loop
   const animate = useCallback(() => {
@@ -321,7 +348,7 @@ export default function AnswerParticles() {
           >
             <div
               
-              className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md mx-4 text-center"
+              className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md mx-4 text-center px-4"
             >
               <div className="mb-4">
                 <p className="text-gray-300 text-sm leading-relaxed">
@@ -341,7 +368,7 @@ export default function AnswerParticles() {
                 />
               </div>
               {error2 && <p className="text-red-500 text-sm mb-2">{error2}</p>}
-              <button onClick={handleCheck} className="bg-gray-700 hover:bg-gray-600 text-white p-1.5 rounded text-xs">
+              <button onClick={handleCheck} className="bg-gray-700 hover:bg-gray-600 text-white p-1.5 px-3 rounded text-xs">
                 확인
               </button>
             </div>
@@ -350,49 +377,30 @@ export default function AnswerParticles() {
 
       {/* Mobile Control Panel */}
       {isMobile ? (
-        <div className="absolute top-2 left-2 right-2 z-50 bg-gray-800 rounded-lg border border-gray-600 p-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-blue-400" />
-              <span className="text-white text-sm font-semibold">Mobile View</span>
+        <>
+          {/* <div className="absolute top-2 left-2 right-2 z-50 bg-gray-800 rounded-lg border border-gray-600 p-3 py-5">
+            <div className="text-xs text-gray-300">
+              <span>Answers: {particles.length}</span>
+              <span className="mx-2">•</span>
+              <span>Recent: {particles.filter((p) => !p.isOld).length}</span>
+              <span className="mx-2">•</span>
+              <span>Old: {particles.filter((p) => p.isOld).length}</span>
             </div>
-            <div className="flex gap-1">
-              <button
-                onClick={() => setIsAnimating(!isAnimating)}
-                className="bg-gray-700 hover:bg-gray-600 text-white p-1.5 rounded text-xs"
-              >
-                {isAnimating ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-              </button>
-              <button
-                onClick={() => setPanels([])}
-                className="bg-gray-700 hover:bg-gray-600 text-white p-1.5 rounded text-xs"
-              >
-                <RotateCcw className="w-3 h-3" />
-              </button>
-            </div>
+            
+          </div> */}
+          <div onClick={() => {
+            setIsAnimating(false) // particle animation 멈춤
+            router.push("/404_not_found")
+          }} className="cursor-pointer absolute bottom-4 left-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
+            <div>나의 답변 보기</div>
           </div>
-
-          <div className="mb-2">
-            <label className="text-white text-xs mb-1 block">Particle Size: {particleSize.toFixed(1)}x</label>
-            <input
-              type="range"
-              min="0.5"
-              max="3"
-              step="0.1"
-              value={particleSize}
-              onChange={(e) => setParticleSize(Number.parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-            />
+          <div onClick={() => {
+            setIsAnimating(false) // particle animation 멈춤
+            router.push("/question")
+          }} className="cursor-pointer absolute bottom-4 right-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
+            <div>다음 질문</div>
           </div>
-
-          <div className="text-xs text-gray-300">
-            <span>Answers: {particles.length}</span>
-            <span className="mx-2">•</span>
-            <span>Recent: {particles.filter((p) => !p.isOld).length}</span>
-            <span className="mx-2">•</span>
-            <span>Old: {particles.filter((p) => p.isOld).length}</span>
-          </div>
-        </div>
+        </>
       ) : (
         /* Desktop Control Panel */
         <>
@@ -471,7 +479,7 @@ export default function AnswerParticles() {
       )}
 
       {/* Particles */}
-      <div className="absolute inset-0" style={{ marginTop: isMobile ? "80px" : "0" }}>
+      <div className="absolute inset-0" style={{ marginTop: isMobile ? "0px" : "0" }}>
         {particles.map((particle) => (
           <div
             key={particle.id}

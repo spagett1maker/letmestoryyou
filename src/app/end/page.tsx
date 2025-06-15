@@ -223,7 +223,7 @@ export default function EmotionCanvas() {
       <div ref={canvasRef} className="absolute inset-0" />
 
       <div className="absolute bottom-10 w-full text-center text-white text-base font-sans px-5 pointer-events-none text-shadow-sm">
-        <p className="leading-relaxed text-white/85">
+        <p className="leading-relaxed text-white/85 text-[13px] sm:text-base">
           이곳은 당신의 감정이 잠시 머물 수 있는 안전한 공간입니다.<br />
           우리는 당신의 이야기를 소유하지 않아요.<br />
           감정이 머물렀다가, 자연스럽게 흘러갈 수 있도록 돕는 자리입니다.<br />
@@ -234,14 +234,14 @@ export default function EmotionCanvas() {
 
         <div className="flex justify-center gap-3 mt-5 pointer-events-auto">
           <button
-            className="px-6 py-3 text-white text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
+            className="px-6 py-3 text-white text-sm sm:text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
             onClick={handleStayClick}
           >
             머물다가기
           </button>
           <button
             onClick={handleTraceClick}
-            className="px-6 py-3 text-white text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
+            className="px-6 py-3 text-white text-sm sm:text-base bg-white/10 border border-white/30 rounded-md backdrop-blur transition hover:bg-white/20"
           >
             흔적 따라가기
           </button>

@@ -176,7 +176,7 @@ export default function Home() {
   }
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-10">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 sm:px-10">
       <div className="absolute top-0 left-0 w-full h-screen object-cover z-0">
         <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-10 bg-black" onClick={() => handleDotClick()} />
       </div>    
@@ -188,7 +188,7 @@ export default function Home() {
 
           <div className="mb-6">
             <textarea
-              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-white rounded-lg resize-none h-52 focus:outline-none"
+              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-gray-400 placeholder:text-[15px] rounded-lg resize-none h-52 focus:outline-none text-sm sm:text-base"
               placeholder={
                 '지금 이 질문을 보고 떠오르는 감정이나 생각이 있다면, \n부담 없이 적어주세요. 꼭 정답일 필요 없어요.\n감정이 잘 떠오르지 않아도 괜찮습니다.\n그냥 지금 마음에 남는 단어나 문장, 혹은 아무 생각이라도 좋아요.\n이 공간은 당신의 감정을 잠시 머물게 하고, \n흘려보내는 연습을 돕습니다.'
               }
@@ -198,7 +198,7 @@ export default function Home() {
           </div>
 
           <button className="w-full py-3 mb-12 text-white bg-black/80 rounded-full" onClick={handleSubmit} disabled={loading}>
-            {loading ? '이야기 전송중...' : '나의 이야기 건네기'}
+            {loading ? '이야기 전송중...' : '이야기 건네기'}
           </button>
 
           {/* <div className="flex justify-center">
@@ -210,9 +210,9 @@ export default function Home() {
           </div> */}
         </div>
       }
-      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/80/ rounded-lg/-4">
+      <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/80/ rounded-lg/-4 w-full px-4">
         <p className="text-white text-lg font-light tracking-wide text-center">
-          당신이 남긴 감정을 다시 보고 싶다면, 한 번 더 이야기해 주세요. <br />
+          당신이 남긴 감정을 다시 보고 싶다면,<br className="block sm:hidden"/> 한 번 더 이야기해 주세요. <br />
           당신의 응답이 열쇠가 됩니다.
         </p>
       </div>
