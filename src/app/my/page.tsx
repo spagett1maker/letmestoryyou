@@ -230,7 +230,8 @@ export default function AnswerParticles() {
             isDummy: myParticle.isDummy,
           }
       
-          setPanels((prev) => [...prev, newPanel])
+          //setPanels((prev) => [...prev, newPanel])
+          setPanels([newPanel])
         }
       }
       
