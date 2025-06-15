@@ -132,20 +132,42 @@ export default function EmotionCanvas() {
             }
           }
 
+          // p.mousePressed = () => {
+          //   // AudioContext 재개 (모바일 대응)
+          //   if (p.getAudioContext().state !== 'running') {
+          //     p.getAudioContext().resume()
+          //   }
+            
+          //   isPlaying = !isPlaying
+            
+          //   if (isPlaying && !sound.isPlaying()) {
+          //     sound.play()
+          //   } else if (!isPlaying && sound.isPlaying()) {
+          //     sound.pause()
+          //   }
+          // }
           p.mousePressed = () => {
-            // AudioContext 재개 (모바일 대응)
-            if (p.getAudioContext().state !== 'running') {
-              p.getAudioContext().resume()
-            }
-            
-            isPlaying = !isPlaying
-            
-            if (isPlaying && !sound.isPlaying()) {
-              sound.play()
-            } else if (!isPlaying && sound.isPlaying()) {
-              sound.pause()
+            // 사용자 입력 발생 시 오디오 컨텍스트 활성화
+            const ctx = p.getAudioContext()
+            if (ctx.state !== 'running') {
+              ctx.resume().then(() => {
+                isPlaying = !isPlaying
+                if (isPlaying) {
+                  sound.play()
+                } else {
+                  sound.pause()
+                }
+              })
+            } else {
+              isPlaying = !isPlaying
+              if (isPlaying) {
+                sound.play()
+              } else {
+                sound.pause()
+              }
             }
           }
+          
 
           p.keyPressed = () => {
             sound.stop()
