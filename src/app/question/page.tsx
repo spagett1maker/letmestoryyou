@@ -1,7 +1,6 @@
 "use client"
 
 import { useState , useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
 
 interface Question {
   id: string,
@@ -51,7 +50,6 @@ function encryptAnswerFancy(answer: string): string {
 }
 
 export default function Home() {
-  const router = useRouter()
   const [question, setQuestion] = useState<Question | null>(null)
   const [answer, setAnswer] = useState('')
   const [loading, setLoading] = useState(false)
@@ -188,7 +186,7 @@ export default function Home() {
 
           <div className="mb-6">
             <textarea
-              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-gray-400 rounded-lg resize-none h-52 focus:outline-none"
+              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-gray-400 rounded-lg resize-none h-52 focus:outline-none mobile-placeholder-hide-on-focus"
               placeholder={
                 '지금 이 질문을 보고 떠오르는 감정이나 생각이 있다면, \n부담 없이 적어주세요. 꼭 정답일 필요 없어요.\n감정이 잘 떠오르지 않아도 괜찮습니다.\n그냥 지금 마음에 남는 단어나 문장, 혹은 아무 생각이라도 좋아요.\n이 공간은 당신의 감정을 잠시 머물게 하고, \n흘려보내는 연습을 돕습니다.'
               }

@@ -21,6 +21,13 @@ export default function EmotionCanvas() {
   const router = useRouter()
 
   useEffect(() => {
+
+    if (window.innerWidth < 840) {
+      router.push('/end/mobile-end')
+      return
+    }
+
+
     const loadP5 = () =>
       new Promise((resolve, reject) => {
         if (window.p5) {
