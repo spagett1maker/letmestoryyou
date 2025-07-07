@@ -9,8 +9,19 @@ export default function BreatheBox() {
     router.push('/list')
   }
   return (
-    <div className="flex items-center justify-center w-screen h-screen bg-[#121212] font-['Roboto']">
-      <div className="relative flex items-center justify-center w-[200px] h-[200px] border border-white">
+    <div className="flex items-center justify-center w-screen h-screen bg-[#121212] ">
+      <div className="w-full h-full absolute top-0 left-0 bg-black/50 flex flex-col pt-20">
+       
+        <div className="text-white text-sm text-center w-full leading-6">
+          이곳은 당신의 감정이 잠시 머물 수 있는 안전한 공간입니다. <br/>
+          우리는 당신의 이야기를 소유하지 않아요. <br/>
+          감정이 머물렀다가, 자연스럽게 흘러갈 수 있도록 돕는 자리입니다. <br/>
+          당신은 감정의 주인이며, 감정을 바라보는 사람입니다. <br/>
+          지금 이 감정은 당신의 일부일 뿐, 당신 전체가 아닙니다. <br/>
+          표현한 만큼, 이제 감정을 보내주셔도 됩니다. <br/>
+        </div>
+      </div>
+      <div className="relative flex items-center justify-center w-[200px] h-[200px] border border-white font-['Roboto']">
         <div
           className="absolute w-[10px] h-[10px] rounded-full bg-teal-500/ bg-[#A9EFFF] shadow-[0_0_10px_10px_teal] top-[-5px] left-[-5px] breathe-dot"
         ></div>
@@ -21,6 +32,7 @@ export default function BreatheBox() {
           <span className="absolute words4">Hold</span>
         </div>
       </div>
+
 
       <button
         onClick={handleTraceClick}
