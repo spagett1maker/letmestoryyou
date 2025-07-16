@@ -186,7 +186,7 @@ export default function Home() {
 
           <div className="mb-6">
             <textarea
-              className="text-white w-full p-4 bg-black/80 border-none shadow-lg placeholder:text-gray-400 rounded-lg resize-none h-52 focus:outline-none mobile-placeholder-hide-on-focus"
+              className="text-white w-full p-4 bg-black/80 border border-gray-500 shadow-lg placeholder:text-gray-400 rounded-lg resize-none h-52 focus:outline-none mobile-placeholder-hide-on-focus"
               placeholder={
                 '지금 이 질문을 보고 떠오르는 감정이나 생각이 있다면, \n부담 없이 적어주세요. 꼭 정답일 필요 없어요.\n감정이 잘 떠오르지 않아도 괜찮습니다.\n그냥 지금 마음에 남는 단어나 문장, 혹은 아무 생각이라도 좋아요.\n이 공간은 당신의 감정을 잠시 머물게 하고, \n흘려보내는 연습을 돕습니다.'
               }
@@ -195,10 +195,16 @@ export default function Home() {
             />
           </div>
 
-          <button className="w-full py-3 mb-12 text-white bg-black/80 rounded-full" onClick={handleSubmit} disabled={loading}>
-            {loading ? '이야기 전송중...' : '이야기 건네기'}
-          </button>
-
+          {answer.length > 0 &&
+            <button className="w-full py-3 mb-12 text-white bg-black/80 rounded-full" onClick={handleSubmit} disabled={loading}>
+              {loading ? '이야기 전송중...' : '이야기 건네기'}
+            </button>
+          }
+          {answer.length === 0 &&
+            <button className="w-full py-3 mb-12 text-white bg-black/80 rounded-full">
+              위의 상자를 눌러 이야기를 건네주세요.
+            </button>
+          }
           {/* <div className="flex justify-center">
             <Link href="/about" className="flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
