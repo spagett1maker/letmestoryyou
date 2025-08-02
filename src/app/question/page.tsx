@@ -180,7 +180,7 @@ export default function Home() {
       </div>    
       {selected && 
         <div className="w-full max-w-md z-20">
-          <h1 className="mb-12 text-4xl font-normal leading-tight text-white rounded-lg p-4 bg-black/80">
+          <h1 className="mb-12 text-2xl sm:text-4xl font-normal leading-tight text-white rounded-lg p-4 bg-black/80">
             {question?.question_number}. {question?.question_text}
           </h1>
 
