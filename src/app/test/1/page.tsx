@@ -1,0 +1,587 @@
+'use client'
+
+import { useEffect, useRef } from 'react'
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js'
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
+
+const PARTICLE_COUNT = 15000;
+const SPARK_COUNT = 2000;
+const STAR_COUNT = 7000;
+
+export default function MorphingShapes() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const sceneRef = useRef<THREE.Scene | null>(null)
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
+  const composerRef = useRef<EffectComposer | null>(null)
+  const controlsRef = useRef<OrbitControls | null>(null)
+  const particlesRef = useRef<THREE.Points | null>(null)
+  const sparklesRef = useRef<THREE.Points | null>(null)
+  const starsRef = useRef<THREE.Points | null>(null)
+  const clockRef = useRef(new THREE.Clock())
+  const currentPatternRef = useRef(0)
+  const isTransRef = useRef(false)
+  const progRef = useRef(0)
+  const morphSpeed = 0.03
+
+  const normalise = (points: THREE.Vector3[], size: number): THREE.Vector3[] => {
+    if (points.length === 0) return [];
+    const box = new THREE.Box3().setFromPoints(points);
+    const maxDim = Math.max(...box.getSize(new THREE.Vector3()).toArray()) || 1;
+    const centre = box.getCenter(new THREE.Vector3());
+    return points.map(p => p.clone().sub(centre).multiplyScalar(size / maxDim));
+  }
+
+  const torusKnot = (n: number): THREE.Vector3[] => {
+    const geometry = new THREE.TorusKnotGeometry(10, 3, 200, 16, 2, 3);
+    const points: THREE.Vector3[] = [];
+    const positionAttribute = geometry.attributes.position;
+    for (let i = 0; i < positionAttribute.count; i++) {
+      points.push(new THREE.Vector3().fromBufferAttribute(positionAttribute, i));
+    }
+    const result: THREE.Vector3[] = [];
+    for (let i = 0; i < n; i++) {
+      result.push(points[i % points.length].clone());
+    }
+    return normalise(result, 50);
+  }
+
+  const halvorsen = (n: number): THREE.Vector3[] => {
+    const pts: THREE.Vector3[] = [];
+    let x = 0.1, y = 0, z = 0;
+    const a = 1.89;
+    const dt = 0.005;
+    for (let i = 0; i < n * 25; i++) {
+      const dx = -a * x - 4 * y - 4 * z - y * y;
+      const dy = -a * y - 4 * z - 4 * x - z * z;
+      const dz = -a * z - 4 * x - 4 * y - x * x;
+      x += dx * dt;
+      y += dy * dt;
+      z += dz * dt;
+      if (i > 200 && i % 25 === 0) {
+        pts.push(new THREE.Vector3(x, y, z));
+      }
+      if (pts.length >= n) break;
+    }
+    while(pts.length < n) pts.push(pts[Math.floor(Math.random()*pts.length)].clone());
+    return normalise(pts, 60);
+  }
+
+  const dualHelix = (n: number): THREE.Vector3[] => {
+    const pts: THREE.Vector3[] = [];
+    const turns = 5;
+    const radius = 15;
+    const height = 40;
+    for (let i = 0; i < n; i++) {
+      const isSecondHelix = i % 2 === 0;
+      const angle = (i / n) * Math.PI * 2 * turns;
+      const y = (i / n) * height - height / 2;
+      const r = radius + (isSecondHelix ? 5 : -5);
+      const x = Math.cos(angle) * r;
+      const z = Math.sin(angle) * r;
+      pts.push(new THREE.Vector3(x, y, z));
+    }
+    return normalise(pts, 60);
+  }
+
+  const deJong = (n: number): THREE.Vector3[] => {
+    const pts: THREE.Vector3[] = [];
+    let x = 0.1, y = 0.1;
+    const a = 1.4, b = -2.3, c = 2.4, d = -2.1;
+    for (let i = 0; i < n; i++) {
+      const xn = Math.sin(a * y) - Math.cos(b * x);
+      const yn = Math.sin(c * x) - Math.cos(d * y);
+      x = xn;
+      y = yn;
+      const z = Math.sin(x * y * 0.5);
+      pts.push(new THREE.Vector3(x, y, z));
+    }
+    return normalise(pts, 55);
+  }
+
+  const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong];
+
+  const createStars = (): THREE.Points => {
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(STAR_COUNT * 3);
+    const col = new Float32Array(STAR_COUNT * 3);
+    const size = new Float32Array(STAR_COUNT);
+    const rnd = new Float32Array(STAR_COUNT);
+    const R = 900;
+    
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const i3 = i * 3;
+      const θ = Math.random() * 2 * Math.PI;
+      const φ = Math.acos(2 * Math.random() - 1);
+      const r = R * Math.cbrt(Math.random());
+      
+      pos[i3] = r * Math.sin(φ) * Math.cos(θ);
+      pos[i3 + 1] = r * Math.sin(φ) * Math.sin(θ);
+      pos[i3 + 2] = r * Math.cos(φ);
+      
+      const c = new THREE.Color().setHSL(Math.random() * 0.6, 0.3 + 0.3 * Math.random(), 0.55 + 0.35 * Math.random());
+      col[i3] = c.r;
+      col[i3 + 1] = c.g;
+      col[i3 + 2] = c.b;
+      
+      size[i] = 0.25 + Math.pow(Math.random(), 4) * 2.1;
+      rnd[i] = Math.random() * Math.PI * 2;
+    }
+    
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    geo.setAttribute("size", new THREE.BufferAttribute(size, 1));
+    geo.setAttribute("random", new THREE.BufferAttribute(rnd, 1));
+    
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0 } },
+      vertexShader: `
+        attribute float size;
+        attribute float random;
+        varying vec3 vColor;
+        varying float vRnd;
+        void main(){
+          vColor=color;
+          vRnd=random;
+          vec4 mv=modelViewMatrix*vec4(position,1.);
+          gl_PointSize=size*(250./-mv.z);
+          gl_Position=projectionMatrix*mv;
+        }`,
+      fragmentShader: `
+        uniform float time;
+        varying vec3 vColor;
+        varying float vRnd;
+        void main(){
+          vec2 uv=gl_PointCoord-.5;
+          float d=length(uv);
+          float a=1.-smoothstep(.4,.5,d);
+          a*=.7+.3*sin(time*(.6+vRnd*.3)+vRnd*5.);
+          if(a<.02)discard;
+          gl_FragColor=vec4(vColor,a);
+        }`,
+      transparent: true,
+      depthWrite: false,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending
+    });
+    
+    return new THREE.Points(geo, mat);
+  }
+
+  const makeParticles = (count: number, palette: THREE.Color[]): THREE.Points => {
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const size = new Float32Array(count);
+    const rnd = new Float32Array(count * 3);
+    
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const base = palette[Math.random() * palette.length | 0];
+      const hsl = { h: 0, s: 0, l: 0 };
+      base.getHSL(hsl);
+      hsl.h += (Math.random() - 0.5) * 0.05;
+      hsl.s = Math.min(1, Math.max(0.7, hsl.s + (Math.random() - 0.5) * 0.3));
+      hsl.l = Math.min(0.9, Math.max(0.5, hsl.l + (Math.random() - 0.5) * 0.4));
+      const c = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l);
+      col[i3] = c.r;
+      col[i3 + 1] = c.g;
+      col[i3 + 2] = c.b;
+      size[i] = 0.7 + Math.random() * 1.1;
+      rnd[i3] = Math.random() * 10;
+      rnd[i3 + 1] = Math.random() * Math.PI * 2;
+      rnd[i3 + 2] = 0.5 + 0.5 * Math.random();
+    }
+    
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    geo.setAttribute("size", new THREE.BufferAttribute(size, 1));
+    geo.setAttribute("random", new THREE.BufferAttribute(rnd, 3));
+    
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0 }, hueSpeed: { value: 0.12 } },
+      vertexShader: `
+        uniform float time;
+        attribute float size;
+        attribute vec3 random;
+        varying vec3 vCol;
+        varying float vR;
+        void main(){
+          vCol=color;
+          vR=random.z;
+          vec3 p=position;
+          float t=time*.25*random.z;
+          float ax=t+random.y, ay=t*.75+random.x;
+          float amp=(.6+sin(random.x+t*.6)*.3)*random.z;
+          p.x+=sin(ax+p.y*.06+random.x*.1)*amp;
+          p.y+=cos(ay+p.z*.06+random.y*.1)*amp;
+          p.z+=sin(ax*.85+p.x*.06+random.z*.1)*amp;
+          vec4 mv=modelViewMatrix*vec4(p,1.);
+          float pulse=.9+.1*sin(time*1.15+random.y);
+          gl_PointSize=size*pulse*(350./-mv.z);
+          gl_Position=projectionMatrix*mv;
+        }`,
+      fragmentShader: `
+        uniform float time;
+        uniform float hueSpeed;
+        varying vec3 vCol;
+        varying float vR;
+
+        vec3 hueShift(vec3 c, float h) {
+          const vec3 k = vec3(0.57735);
+          float cosA = cos(h);
+          float sinA = sin(h);
+          return c * cosA + cross(k, c) * sinA + k * dot(k, c) * (1.0 - cosA);
+        }
+
+        void main() {
+          vec2 uv = gl_PointCoord - 0.5;
+          float d = length(uv);
+          
+          float core = smoothstep(0.05, 0.0, d);
+          float angle = atan(uv.y, uv.x);
+          float flare = pow(max(0.0, sin(angle * 6.0 + time * 2.0 * vR)), 4.0);
+          flare *= smoothstep(0.5, 0.0, d);
+          float glow = smoothstep(0.4, 0.1, d);
+          
+          float alpha = core * 1.0 + flare * 0.5 + glow * 0.2;
+          
+          vec3 color = hueShift(vCol, time * hueSpeed);
+          vec3 finalColor = mix(color, vec3(1.0, 0.95, 0.9), core);
+          finalColor = mix(finalColor, color, flare * 0.5 + glow * 0.5);
+
+          if (alpha < 0.01) discard;
+          
+          gl_FragColor = vec4(finalColor, alpha);
+        }`,
+      transparent: true,
+      depthWrite: false,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending
+    });
+    
+    return new THREE.Points(geo, mat);
+  }
+
+  const createSparkles = (count: number): THREE.Points => {
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const size = new Float32Array(count);
+    const rnd = new Float32Array(count * 3);
+
+    for (let i = 0; i < count; i++) {
+      size[i] = 0.5 + Math.random() * 0.8;
+      rnd[i * 3] = Math.random() * 10;
+      rnd[i * 3 + 1] = Math.random() * Math.PI * 2;
+      rnd[i * 3 + 2] = 0.5 + 0.5 * Math.random();
+    }
+    
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('size', new THREE.BufferAttribute(size, 1));
+    geo.setAttribute('random', new THREE.BufferAttribute(rnd, 3));
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0 } },
+      vertexShader: `
+        uniform float time;
+        attribute float size;
+        attribute vec3 random;
+        void main() {
+          vec3 p = position;
+          float t = time * 0.25 * random.z;
+          float ax = t + random.y, ay = t * 0.75 + random.x;
+          float amp = (0.6 + sin(random.x + t * 0.6) * 0.3) * random.z;
+          p.x += sin(ax + p.y * 0.06 + random.x * 0.1) * amp;
+          p.y += cos(ay + p.z * 0.06 + random.y * 0.1) * amp;
+          p.z += sin(ax * 0.85 + p.x * 0.06 + random.z * 0.1) * amp;
+          vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);
+          gl_PointSize = size * (300.0 / -mvPosition.z);
+          gl_Position = projectionMatrix * mvPosition;
+        }`,
+      fragmentShader: `
+        uniform float time;
+        void main() {
+          float d = length(gl_PointCoord - vec2(0.5));
+          float alpha = 1.0 - smoothstep(0.4, 0.5, d);
+          if (alpha < 0.01) discard;
+          gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
+        }`,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    return new THREE.Points(geo, mat);
+  }
+
+  const applyPattern = (i: number) => {
+    if (!particlesRef.current || !sparklesRef.current) return;
+    
+    const pts = PATTERNS[i](PARTICLE_COUNT);
+    const particleArr = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    const sparkleArr = sparklesRef.current.geometry.attributes.position.array as Float32Array;
+    
+    for (let j = 0; j < PARTICLE_COUNT; j++) {
+      const idx = j * 3;
+      const p = pts[j] || new THREE.Vector3();
+      particleArr[idx] = p.x;
+      particleArr[idx + 1] = p.y;
+      particleArr[idx + 2] = p.z;
+      if (j < SPARK_COUNT) {
+        sparkleArr[idx] = p.x;
+        sparkleArr[idx + 1] = p.y;
+        sparkleArr[idx + 2] = p.z;
+      }
+    }
+    
+    particlesRef.current.geometry.attributes.position.needsUpdate = true;
+    sparklesRef.current.geometry.attributes.position.needsUpdate = true;
+  }
+
+  const beginMorph = () => {
+    if (!particlesRef.current || !sparklesRef.current) return;
+    
+    isTransRef.current = true;
+    progRef.current = 0;
+    const next = (currentPatternRef.current + 1) % PATTERNS.length;
+    const fromPts = (particlesRef.current.geometry.attributes.position.array as Float32Array).slice();
+    const toPts = PATTERNS[next](PARTICLE_COUNT);
+    
+    const to = new Float32Array(PARTICLE_COUNT * 3);
+    if (toPts.length > 0) {
+      for (let j = 0; j < PARTICLE_COUNT; j++) {
+        const idx = j * 3;
+        const p = toPts[j];
+        to[idx] = p.x;
+        to[idx + 1] = p.y;
+        to[idx + 2] = p.z;
+      }
+      particlesRef.current.userData = { from: fromPts, to, next };
+      sparklesRef.current.userData = { from: fromPts, to, next };
+    }
+  }
+
+  const animate = () => {
+    requestAnimationFrame(animate);
+    const dt = clockRef.current.getDelta();
+    const t = clockRef.current.getElapsedTime();
+
+    if (controlsRef.current) controlsRef.current.update();
+
+    if (particlesRef.current) (particlesRef.current.material as THREE.ShaderMaterial).uniforms.time.value = t;
+    if (sparklesRef.current) (sparklesRef.current.material as THREE.ShaderMaterial).uniforms.time.value = t;
+    if (starsRef.current) (starsRef.current.material as THREE.ShaderMaterial).uniforms.time.value = t;
+
+    if (isTransRef.current && particlesRef.current && sparklesRef.current) {
+      progRef.current += morphSpeed;
+      const eased = progRef.current >= 1 ? 1 : 1 - Math.pow(1 - progRef.current, 3);
+      const { from, to } = particlesRef.current.userData;
+      if (to) {
+        const particleArr = particlesRef.current.geometry.attributes.position.array as Float32Array;
+        const sparkleArr = sparklesRef.current.geometry.attributes.position.array as Float32Array;
+        for (let i = 0; i < particleArr.length; i++) {
+          const val = from[i] + (to[i] - from[i]) * eased;
+          particleArr[i] = val;
+          if (i < sparkleArr.length) {
+            sparkleArr[i] = val;
+          }
+        }
+        particlesRef.current.geometry.attributes.position.needsUpdate = true;
+        sparklesRef.current.geometry.attributes.position.needsUpdate = true;
+      }
+      if (progRef.current >= 1) {
+        currentPatternRef.current = particlesRef.current.userData.next;
+        isTransRef.current = false;
+      }
+    }
+
+    if (composerRef.current) composerRef.current.render();
+  }
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Scene setup
+    sceneRef.current = new THREE.Scene();
+    sceneRef.current.fog = new THREE.FogExp2(0x050203, 0.012);
+
+    // Camera setup
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2500);
+    camera.position.set(0, 0, 80);
+
+    // Renderer setup
+    rendererRef.current = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    rendererRef.current.setPixelRatio(window.devicePixelRatio);
+    rendererRef.current.setSize(window.innerWidth, window.innerHeight);
+    containerRef.current.appendChild(rendererRef.current.domElement);
+
+    // Controls setup
+    controlsRef.current = new OrbitControls(camera, rendererRef.current.domElement);
+    controlsRef.current.enableDamping = true;
+    controlsRef.current.dampingFactor = 0.05;
+    controlsRef.current.screenSpacePanning = false;
+    controlsRef.current.minDistance = 20;
+    controlsRef.current.maxDistance = 200;
+    controlsRef.current.target.set(0, 0, 0);
+    controlsRef.current.autoRotate = true;
+    controlsRef.current.autoRotateSpeed = 0.5;
+
+    // Create objects
+    starsRef.current = createStars();
+    sceneRef.current.add(starsRef.current);
+
+    const palette = [0xff3c78, 0xff8c00, 0xfff200, 0x00cfff, 0xb400ff, 0xffffff, 0xff4040].map(c => new THREE.Color(c));
+    particlesRef.current = makeParticles(PARTICLE_COUNT, palette);
+    sparklesRef.current = createSparkles(SPARK_COUNT);
+    sceneRef.current.add(particlesRef.current);
+    sceneRef.current.add(sparklesRef.current);
+
+    // Post-processing setup
+    composerRef.current = new EffectComposer(rendererRef.current);
+    composerRef.current.addPass(new RenderPass(sceneRef.current, camera));
+    composerRef.current.addPass(new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.45, 0.5, 0.85));
+    const after = new AfterimagePass();
+    after.uniforms.damp.value = 0.92;
+    composerRef.current.addPass(after);
+    composerRef.current.addPass(new OutputPass());
+
+    applyPattern(currentPatternRef.current);
+
+    // Resize handler
+    const handleResize = () => {
+      if (!rendererRef.current || !composerRef.current) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      rendererRef.current.setSize(window.innerWidth, window.innerHeight);
+      composerRef.current.setSize(window.innerWidth, window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Start animation
+    animate();
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (containerRef.current && rendererRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
+      }
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+    };
+  }, []);
+
+  const handleMorphClick = () => {
+    if (!isTransRef.current) {
+      beginMorph();
+    }
+  };
+
+  return (
+    <>
+      <style jsx>{`
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        body {
+          font-family: "Inter", sans-serif;
+          overflow: hidden;
+          background: #040307; 
+          background-image:
+            radial-gradient(circle at 50% 35%, #1d1431 0%, transparent 65%),
+            linear-gradient(180deg, #000000 0%, #070012 100%);
+          color: #eee;
+        }
+        
+        .container {
+          position: fixed;
+          inset: 0;
+        }
+        
+        .vignette {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 9;
+          background: radial-gradient(circle at center, rgba(0,0,0,0) 65%, rgba(0,0,0,.5) 100%);
+        }
+        
+        canvas {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+
+        .instructions {
+          position: fixed;
+          left: 24px;
+          bottom: 24px;
+          transform: none;
+          padding: 10px 20px;
+          font-size: 12px;
+          text-align: left;
+          pointer-events: none;
+          color: #d0b0ff;
+          background: rgba(18, 15, 40, 0.25);
+          border: 1px solid rgba(122, 70, 255, 0.28);
+          border-radius: 12px;
+          backdrop-filter: blur(12px);
+          z-index: 10;
+          box-shadow: 0 4px 20px rgba(0,0,0,.45);
+        }
+
+        .morphButton {
+          position: fixed;
+          left: 50%;
+          bottom: 24px;
+          transform: translateX(-50%);
+          padding: 12px 30px;
+          font-size: 14px;
+          font-weight: 500;
+          color: rgba(230, 220, 255, 0.9);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 50px;
+          backdrop-filter: blur(10px) saturate(180%);
+          -webkit-backdrop-filter: blur(10px) saturate(180%);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+          cursor: pointer;
+          z-index: 10;
+          transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .morphButton:hover {
+          background: rgba(255, 255, 255, 0.15);
+          transform: translateX(-50%) scale(1.05);
+          box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+          color: white;
+        }
+
+        .morphButton:active {
+          transform: translateX(-50%) scale(0.98);
+        }
+      `}</style>
+      
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+      
+      <div className="container" ref={containerRef}></div>
+      <div className="vignette"></div>
+      <div className="instructions">Drag to explore</div>
+      <button className="morphButton" onClick={handleMorphClick}>
+        Morph Shape
+      </button>
+    </>
+  )
+}

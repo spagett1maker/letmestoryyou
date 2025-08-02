@@ -176,7 +176,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-10">
       <div className="absolute top-0 left-0 w-full h-screen object-cover z-0">
-        <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-10 bg-black" onClick={() => handleDotClick()} />
+        <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-10 bg-[#000A14]" onClick={() => handleDotClick()} />
       </div>    
       {selected && 
         <div className="w-full max-w-md z-20">
@@ -214,9 +214,11 @@ export default function Home() {
           </div> */}
         </div>
       }
+      {!selected &&
       <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/80/ rounded-lg/-4">
         <p className="text-white text-base sm:text-lg font-light tracking-wide">마음이 닿는 점을 눌러주세요.</p>
       </div>
+      }
     </div>
   )
 }

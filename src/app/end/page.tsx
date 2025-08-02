@@ -253,7 +253,7 @@ export default function EmotionCanvas() {
       {/* p5.js 캔버스가 렌더링될 컨테이너 */}
       <div ref={canvasRef} className="absolute inset-0" />
 
-      <div className="absolute bottom-10 w-full text-center text-white text-base font-sans px-5 pointer-events-none text-shadow-sm">
+      <div className="absolute bottom-10 w-full text-center text-white text-base px-5 pointer-events-none text-shadow-sm">
         <p className="leading-relaxed text-white/85 text-[13px] sm:text-base">
           이곳은 당신의 감정이 잠시 머물 수 있는 안전한 공간입니다.<br />
           우리는 당신의 이야기를 소유하지 않아요.<br />

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Pixel';
+  src: url('/fonts/pixel.woff2') format('woff'),
+       url('/fonts/pixel.woff') format('woff');
+}
 
 @media (max-width: 768px) {
   textarea:focus::placeholder {
