@@ -373,13 +373,13 @@ export default function AnswerParticles() {
           <div onClick={() => {
             setIsAnimating(false) // particle animation 멈춤
             router.push("/404_not_found")
-          }} className="cursor-pointer absolute bottom-4 left-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
+          }} className="cursor-pointer absolute bottom-20 left-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
             <div>나의 답변 보기</div>
           </div>
           <div onClick={() => {
             setIsAnimating(false) // particle animation 멈춤
             router.push("/question")
-          }} className="cursor-pointer absolute bottom-4 right-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
+          }} className="cursor-pointer absolute bottom-20 right-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
             <div>다음 질문</div>
           </div>
         </>
