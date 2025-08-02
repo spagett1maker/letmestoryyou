@@ -104,7 +104,7 @@ export default function StarfieldPage() {
     // 2초 후에 /question으로 라우팅
     setTimeout(() => {
       router.push('/question')
-    }, 4000)
+    }, 2900)
   }
 
   return (
