@@ -186,7 +186,7 @@ export default function Home() {
 
           <div className="mb-6">
             <textarea
-              className="text-white w-full p-4 bg-black/80 border border-gray-500 shadow-lg placeholder:text-gray-400 rounded-lg resize-none h-52 focus:outline-none mobile-placeholder-hide-on-focus"
+              className="text-white w-full p-4 bg-black/80 border border-gray-500 shadow-lg placeholder:text-gray-400 rounded-lg resize-none h-56 focus:outline-none mobile-placeholder-hide-on-focus"
               placeholder={
                 '떠오르는 감정이나 생각을 부담 없이 적어주세요.\n꼭 정답일 필요 없어요.\n그냥 지금 마음에 남는 단어나 문장, 혹은 아무 생각이라도 좋아요.\n이 공간은 당신의 감정을 잠시 머물게 하고, \n흘려보내는 연습을 돕습니다.'
               }
