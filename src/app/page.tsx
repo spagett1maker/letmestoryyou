@@ -129,7 +129,7 @@ export default function StarfieldPage() {
       <a
         ref={warpRef}
         onClick={handleWarpClick}
-        className="absolute z-20 bottom-5 left-1/2 -translate-x-1/2 border-2 px-4 py-2 text-center font-bold text-[1.2em] text-cyan-100 hover:shadow-lg hover:text-white hover:shadow-blue-300 transition-all bg-black/80"
+        className="absolute z-20 bottom-30 left-1/2 -translate-x-1/2 border-2 px-4 py-2 text-center font-bold text-[1.2em] text-cyan-100 hover:shadow-lg hover:text-white hover:shadow-blue-300 transition-all bg-black/80"
         style={{ width: '10em' }}
       >
         외부 비활성화 하기
