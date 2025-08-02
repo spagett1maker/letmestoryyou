@@ -216,7 +216,7 @@ export default function Home() {
       }
       {!selected &&
       <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/80/ rounded-lg/-4">
-        <p className="text-white text-base sm:text-lg font-light tracking-wide">마음이 닿는 점을 눌러주세요.</p>
+        <p className="text-white text-base sm:text-lg font-light tracking-wide whitespace-nowrap">마음이 닿는 점을 눌러주세요.</p>
       </div>
       }
     </div>
