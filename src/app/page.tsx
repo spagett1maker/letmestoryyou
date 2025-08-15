@@ -110,9 +110,7 @@ export default function StarfieldPage() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-cover bg-center" style={{
       backgroundImage: "url('https://i.imgur.com/r838U7u.jpg')",
-      imageRendering: 'pixelated',
-      fontFamily: 'sans-serif'
-    }}>
+      imageRendering: 'pixelated'    }}>
       <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
 
       <img
@@ -130,7 +128,7 @@ export default function StarfieldPage() {
         ref={warpRef}
         onClick={handleWarpClick}
         className="absolute z-20 bottom-30 left-1/2 -translate-x-1/2 border-2 px-4 py-2 text-center font-bold text-[1.2em] text-cyan-100 hover:shadow-lg hover:text-white hover:shadow-blue-300 transition-all bg-black/80"
-        style={{ width: '10em' }}
+        style={{ width: '11em' }}
       >
         외부 비활성화 하기
       </a>
