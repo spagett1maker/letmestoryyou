@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
@@ -22,11 +22,44 @@ export default function MorphingShapes() {
   const particlesRef = useRef<THREE.Points | null>(null)
   const sparklesRef = useRef<THREE.Points | null>(null)
   const starsRef = useRef<THREE.Points | null>(null)
+  const emotionParticlesRef = useRef<THREE.Points | null>(null) // 감정 파티클
   const clockRef = useRef(new THREE.Clock())
   const currentPatternRef = useRef(0)
   const isTransRef = useRef(false)
   const progRef = useRef(0)
   const morphSpeed = 0.03
+  
+  // 감정 데이터 상태
+  const [emotionData, setEmotionData] = useState<{ [key: string]: number }>({})
+  
+  // 감정별 색상 매핑 (동적으로 감정을 분류)
+  const getEmotionColor = useCallback((emotion: string): number[] => {
+    const emotionLower = emotion.toLowerCase();
+    
+    // 긍정적 감정들 - 따뜻한 색상
+    const positiveEmotions = ['기쁨', '사랑', '만족', '감격', '들뜸', '반가움', '뿌듯', '유쾌', '행복', '좋다', '싱글벙글', '흐뭇', '웃음', '재미', '흥미', '설렘', '친밀감', '희망', '갈망', '소망', '꿈', 'lovely', 'cute', 'want'];
+    if (positiveEmotions.some(pos => emotionLower.includes(pos.toLowerCase()))) {
+      return [0xFFD700, 0xFF69B4, 0x98FB98, 0xFF7F50, 0xDDA0DD, 0x20B2AA][Math.floor(Math.random() * 6)] ? 
+        [[0xFFD700, 0xFFA500, 0xFFB347], [0xFF69B4, 0xFF1493, 0xFF6B6B], [0x98FB98, 0x90EE90, 0x7CFC00], 
+         [0xFF7F50, 0xFF4500, 0xFF6347], [0xDDA0DD, 0xBA55D3, 0x9370DB], [0x20B2AA, 0x48D1CC, 0x40E0D0]][Math.floor(Math.random() * 6)] : [0xFFD700, 0xFFA500, 0xFFB347];
+    }
+    
+    // 부정적 감정들 - 차가운/어두운 색상  
+    const negativeEmotions = ['슬픔', '미움', '두려움', '화', '걱정', '외롭', '불안', '괴로움', '우울', '속상', '짜증', '분풀이', '썽남', '씩씩', '투덜', '퉁명', '칭얼', '분노', '아픔'];
+    if (negativeEmotions.some(neg => emotionLower.includes(neg.toLowerCase()))) {
+      return [[0x4682B4, 0x5F9EA0, 0x708090], [0x8B0000, 0xB22222, 0xDC143C], [0x2F4F4F, 0x696969, 0x778899], 
+              [0xFF4500, 0xFF6347, 0xCD5C5C], [0x9370DB, 0x8A2BE2, 0x9932CC], [0x6A5ACD, 0x483D8B, 0x4B0082]][Math.floor(Math.random() * 6)];
+    }
+    
+    // 중성적 감정들 - 부드러운 색상
+    const neutralEmotions = ['놀라움', '신기함', '궁금', '어리둥절', '어이없음', '당황', 'so so'];
+    if (neutralEmotions.some(neu => emotionLower.includes(neu.toLowerCase()))) {
+      return [[0xE6E6FA, 0xD8BFD8, 0xDDA0DD], [0xB0E0E6, 0xADD8E6, 0x87CEFA], [0xF5DEB3, 0xDEB887, 0xD2B48C]][Math.floor(Math.random() * 3)];
+    }
+    
+    // 기본값 (알 수 없는 감정)
+    return [0xFFFFFF, 0xF0F8FF, 0xE6E6FA];
+  }, []);
 
   const normalise = (points: THREE.Vector3[], size: number): THREE.Vector3[] => {
     if (points.length === 0) return [];
@@ -204,6 +237,41 @@ const fusedShape = (n: number): THREE.Vector3[] => {
 
 
   const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong, test, lorenzSinForcing];
+
+  // 감정 데이터 가져오기
+  useEffect(() => {
+    const fetchEmotions = async () => {
+      try {
+        const response = await fetch('/api/emotions');
+        if (response.ok) {
+          const data = await response.json();
+          setEmotionData(data.emotions);
+        }
+      } catch (error) {
+        console.error('감정 데이터 가져오기 실패:', error);
+      }
+    };
+    
+    fetchEmotions();
+  }, []);
+
+  // 감정 데이터가 변경되면 감정 파티클 업데이트
+  useEffect(() => {
+    if (!sceneRef.current || Object.keys(emotionData).length === 0) return;
+    
+    // 기존 감정 파티클 제거
+    if (emotionParticlesRef.current) {
+      sceneRef.current.remove(emotionParticlesRef.current);
+      emotionParticlesRef.current = null;
+    }
+    
+    // 새로운 감정 파티클 생성
+    const emotionParticles = createEmotionParticles();
+    if (emotionParticles) {
+      emotionParticlesRef.current = emotionParticles;
+      sceneRef.current.add(emotionParticles);
+    }
+  }, [emotionData]);
 
   const createStars = (): THREE.Points => {
     const geo = new THREE.BufferGeometry();
@@ -465,9 +533,106 @@ const fusedShape = (n: number): THREE.Vector3[] => {
     }
   }
 
+  // 감정 파티클 생성 함수
+  const createEmotionParticles = useCallback((): THREE.Points | null => {
+    if (Object.keys(emotionData).length === 0) return null;
+    
+    const EMOTION_COUNT = 300; // 감정 파티클 개수
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(EMOTION_COUNT * 3);
+    const col = new Float32Array(EMOTION_COUNT * 3);
+    const size = new Float32Array(EMOTION_COUNT);
+    const rnd = new Float32Array(EMOTION_COUNT * 3);
+    
+    // 감정 배열 생성 (가중치 적용)
+    const emotions: string[] = [];
+    Object.entries(emotionData).forEach(([emotion, count]) => {
+      for (let i = 0; i < count; i++) {
+        emotions.push(emotion);
+      }
+    });
+    
+    for (let i = 0; i < EMOTION_COUNT; i++) {
+      const i3 = i * 3;
+      
+      // 랜덤 위치 (메인 파티클 주변에 산발적으로 배치)
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
+      const r = 100 + Math.random() * 50; // 메인 패턴보다 약간 밖에
+      
+      pos[i3] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i3 + 2] = r * Math.cos(phi);
+      
+      // 감정에 따른 색상 선택
+      const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+      const emotionColorSet = getEmotionColor(randomEmotion);
+      const colorHex = emotionColorSet[Math.floor(Math.random() * emotionColorSet.length)];
+      const color = new THREE.Color(colorHex);
+      
+      col[i3] = color.r;
+      col[i3 + 1] = color.g;
+      col[i3 + 2] = color.b;
+      
+      size[i] = 0.5 + Math.random() * 1.0; // 작은 크기
+      rnd[i3] = Math.random() * 10;
+      rnd[i3 + 1] = Math.random() * Math.PI * 2;
+      rnd[i3 + 2] = 0.3 + 0.4 * Math.random(); // 약간 느린 움직임
+    }
+    
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    geo.setAttribute("size", new THREE.BufferAttribute(size, 1));
+    geo.setAttribute("random", new THREE.BufferAttribute(rnd, 3));
+    
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0 } },
+      vertexShader: `
+        uniform float time;
+        attribute float size;
+        attribute vec3 random;
+        varying vec3 vCol;
+        varying float vR;
+        void main(){
+          vCol=color;
+          vR=random.z;
+          vec3 p=position;
+          float t=time*0.15*random.z; // 느린 움직임
+          float ax=t+random.y, ay=t*0.75+random.x;
+          float amp=0.8*random.z; // 작은 진폭
+          p.x+=sin(ax+p.y*0.03)*amp;
+          p.y+=cos(ay+p.z*0.03)*amp;
+          p.z+=sin(ax*0.85+p.x*0.03)*amp;
+          vec4 mv=modelViewMatrix*vec4(p,1.);
+          float pulse=0.9+0.1*sin(time*0.8+random.y);
+          gl_PointSize=size*pulse*(200./-mv.z);
+          gl_Position=projectionMatrix*mv;
+        }`,
+      fragmentShader: `
+        uniform float time;
+        varying vec3 vCol;
+        varying float vR;
+        void main(){
+          vec2 uv=gl_PointCoord-0.5;
+          float d=length(uv);
+          float core=smoothstep(0.1,0.0,d);
+          float glow=smoothstep(0.4,0.1,d)*0.3;
+          float alpha=core+glow;
+          if(alpha<0.01)discard;
+          gl_FragColor=vec4(vCol,alpha*0.7);
+        }`,
+      transparent: true,
+      depthWrite: false,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending
+    });
+    
+    return new THREE.Points(geo, mat);
+  }, [emotionData, getEmotionColor]);
+
   const animate = () => {
     requestAnimationFrame(animate);
-    const dt = clockRef.current.getDelta();
+    clockRef.current.getDelta();
     const t = clockRef.current.getElapsedTime();
 
     if (controlsRef.current) controlsRef.current.update();
@@ -475,6 +640,7 @@ const fusedShape = (n: number): THREE.Vector3[] => {
     if (particlesRef.current) (particlesRef.current.material as THREE.ShaderMaterial).uniforms.time.value = t;
     if (sparklesRef.current) (sparklesRef.current.material as THREE.ShaderMaterial).uniforms.time.value = t;
     if (starsRef.current) (starsRef.current.material as THREE.ShaderMaterial).uniforms.time.value = t;
+    if (emotionParticlesRef.current) (emotionParticlesRef.current.material as THREE.ShaderMaterial).uniforms.time.value = t;
 
     if (isTransRef.current && particlesRef.current && sparklesRef.current) {
       progRef.current += morphSpeed;
@@ -534,11 +700,33 @@ const fusedShape = (n: number): THREE.Vector3[] => {
     starsRef.current = createStars();
     sceneRef.current.add(starsRef.current);
 
-    const palette = [0xff3c78, 0xff8c00, 0xfff200, 0x00cfff, 0xb400ff, 0xffffff, 0xff4040].map(c => new THREE.Color(c));
+    // 기본 palette에 감정 색상 추가
+    const basePalette = [0xff3c78, 0xff8c00, 0xfff200, 0x00cfff, 0xb400ff, 0xffffff, 0xff4040];
+    const emotionColorArray: number[] = [];
+    
+    // 감정 데이터에서 색상 추출
+    if (Object.keys(emotionData).length > 0) {
+      Object.keys(emotionData).forEach(emotion => {
+        const colors = getEmotionColor(emotion);
+        emotionColorArray.push(...colors.slice(0, 2)); // 각 감정에서 2개씩만
+      });
+    }
+    
+    // 전체 palette 구성 (기본 70% + 감정 30%)
+    const allColors = [...basePalette, ...emotionColorArray.slice(0, Math.floor(basePalette.length * 0.5))];
+    const palette = allColors.map(c => new THREE.Color(c));
+    
     particlesRef.current = makeParticles(PARTICLE_COUNT, palette);
     sparklesRef.current = createSparkles(SPARK_COUNT);
     sceneRef.current.add(particlesRef.current);
     sceneRef.current.add(sparklesRef.current);
+
+    // 감정 파티클 생성 및 추가
+    const emotionParticles = createEmotionParticles();
+    if (emotionParticles) {
+      emotionParticlesRef.current = emotionParticles;
+      sceneRef.current.add(emotionParticles);
+    }
 
     // Post-processing setup
     composerRef.current = new EffectComposer(rendererRef.current);
