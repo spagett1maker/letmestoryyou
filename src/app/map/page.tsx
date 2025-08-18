@@ -104,28 +104,6 @@ export default function MorphingShapes() {
     return normalise(pts, 60);
   }
 
-  const test = (n: number): THREE.Vector3[] => {
-    const pts: THREE.Vector3[] = [];
-    let x = -0.5, y = 0.1, z = 0.6;
-    const a = 8;
-    const r = 28;
-    const b = 8/3;
-    const dt = 0.005;
-    for (let i = 0; i < n * 25; i++) {
-      const dx = a*(y-x);
-      const dy = r*x - y - x*z;
-      const dz = x*y - b*z;
-      x += dx * dt;
-      y += dy * dt;
-      z += dz * dt;
-      if (i > 200 && i % 25 === 0) {
-        pts.push(new THREE.Vector3(x, y, z));
-      }
-      if (pts.length >= n) break;
-    }
-    while(pts.length < n) pts.push(pts[Math.floor(Math.random()*pts.length)].clone());
-    return normalise(pts, 60);
-  }
 
   const dualHelix = (n: number): THREE.Vector3[] => {
     const pts: THREE.Vector3[] = [];
@@ -159,39 +137,7 @@ export default function MorphingShapes() {
     return normalise(pts, 55);
   }
 
-  // A(test), B(dualHelix), C(deJong)을 하나로 섞은 단일 패턴
-const fusedShape = (n: number): THREE.Vector3[] => {
-  // 각 베이스 패턴에서 같은 개수의 포인트를 뽑음
-  const A = test(n);
-  const B = dualHelix(n);
-  const C = deJong(n);
 
-  const pts: THREE.Vector3[] = new Array(n);
-  const width = 0.5; // 가중치 삼각창의 폭(넓힐수록 전환이 완만)
-  const smooth = (x: number) => x * x * (3 - 2 * x); // smoothstep
-  const tri = (t: number, center: number) => {
-    const v = Math.max(0, 1 - Math.abs(t - center) / width); // 삼각창
-    return smooth(v);
-  };
-
-  for (let i = 0; i < n; i++) {
-    const t = n > 1 ? i / (n - 1) : 0;
-    let wA = tri(t, 0.0);  // 초반엔 A 비중
-    let wB = tri(t, 0.5);  // 중간엔 B 비중
-    let wC = tri(t, 1.0);  // 후반엔 C 비중
-    const s = wA + wB + wC || 1;
-    wA /= s; wB /= s; wC /= s;
-
-    const p = new THREE.Vector3(0, 0, 0)
-      .addScaledVector(A[i], wA)
-      .addScaledVector(B[i], wB)
-      .addScaledVector(C[i], wC);
-
-    pts[i] = p;
-  }
-
-  return normalise(pts, 60); // 최종 스케일 정리
-};
 
   // Lorenz + sinusoidal forcing (네가 올린 수식) → 하나의 패턴 함수
   // x' = σ(-x + y) + κ sin(y/5) sin(z/5)
@@ -236,7 +182,7 @@ const fusedShape = (n: number): THREE.Vector3[] => {
 
 
 
-  const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong, test, lorenzSinForcing];
+  const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong, lorenzSinForcing];
 
   // 감정 데이터 가져오기
   useEffect(() => {
@@ -506,6 +452,24 @@ const fusedShape = (n: number): THREE.Vector3[] => {
       }
     }
     
+    // 감정 파티클도 같은 패턴 적용
+    if (emotionParticlesRef.current && Object.keys(emotionData).length > 0) {
+      const totalEmotionCount = Object.values(emotionData).reduce((sum, count) => sum + count, 0);
+      const EMOTION_COUNT = Math.max(totalEmotionCount * 3, 50);
+      const emotionPts = PATTERNS[i](EMOTION_COUNT);
+      const emotionArr = emotionParticlesRef.current.geometry.attributes.position.array as Float32Array;
+      
+      for (let j = 0; j < EMOTION_COUNT; j++) {
+        const idx = j * 3;
+        const p = emotionPts[j] || new THREE.Vector3();
+        emotionArr[idx] = p.x;
+        emotionArr[idx + 1] = p.y;
+        emotionArr[idx + 2] = p.z;
+      }
+      
+      emotionParticlesRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+    
     particlesRef.current.geometry.attributes.position.needsUpdate = true;
     sparklesRef.current.geometry.attributes.position.needsUpdate = true;
   }
@@ -531,20 +495,43 @@ const fusedShape = (n: number): THREE.Vector3[] => {
       particlesRef.current.userData = { from: fromPts, to, next };
       sparklesRef.current.userData = { from: fromPts, to, next };
     }
+    
+    // 감정 파티클도 모핑 애니메이션에 포함
+    if (emotionParticlesRef.current && Object.keys(emotionData).length > 0) {
+      const totalEmotionCount = Object.values(emotionData).reduce((sum, count) => sum + count, 0);
+      const EMOTION_COUNT = Math.max(totalEmotionCount * 3, 50);
+      const emotionFromPts = (emotionParticlesRef.current.geometry.attributes.position.array as Float32Array).slice();
+      const emotionToPts = PATTERNS[next](EMOTION_COUNT);
+      
+      const emotionTo = new Float32Array(EMOTION_COUNT * 3);
+      if (emotionToPts.length > 0) {
+        for (let j = 0; j < EMOTION_COUNT; j++) {
+          const idx = j * 3;
+          const p = emotionToPts[j];
+          emotionTo[idx] = p.x;
+          emotionTo[idx + 1] = p.y;
+          emotionTo[idx + 2] = p.z;
+        }
+        emotionParticlesRef.current.userData = { from: emotionFromPts, to: emotionTo, next };
+      }
+    }
   }
 
-  // 감정 파티클 생성 함수
+  // 감정 파티클 생성 함수 (오직 데이터베이스 개수만큼)
   const createEmotionParticles = useCallback((): THREE.Points | null => {
     if (Object.keys(emotionData).length === 0) return null;
     
-    const EMOTION_COUNT = 300; // 감정 파티클 개수
+    // 전체 감정 개수 계산
+    const totalEmotionCount = Object.values(emotionData).reduce((sum, count) => sum + count, 0);
+    const EMOTION_COUNT = Math.max(totalEmotionCount * 3, 50); // 최소 50개, 데이터베이스 개수의 3배
+    
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(EMOTION_COUNT * 3);
     const col = new Float32Array(EMOTION_COUNT * 3);
     const size = new Float32Array(EMOTION_COUNT);
     const rnd = new Float32Array(EMOTION_COUNT * 3);
     
-    // 감정 배열 생성 (가중치 적용)
+    // 감정 배열 생성 (가중치 적용) - 데이터베이스 비율 그대로 반영
     const emotions: string[] = [];
     Object.entries(emotionData).forEach(([emotion, count]) => {
       for (let i = 0; i < count; i++) {
@@ -552,19 +539,20 @@ const fusedShape = (n: number): THREE.Vector3[] => {
       }
     });
     
+    // 현재 패턴에 따라 위치 설정
+    const currentPattern = PATTERNS[currentPatternRef.current];
+    const emotionPatternPts = currentPattern(EMOTION_COUNT);
+    
     for (let i = 0; i < EMOTION_COUNT; i++) {
       const i3 = i * 3;
       
-      // 랜덤 위치 (메인 파티클 주변에 산발적으로 배치)
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
-      const r = 100 + Math.random() * 50; // 메인 패턴보다 약간 밖에
+      // 패턴 위치 사용
+      const patternPt = emotionPatternPts[i] || new THREE.Vector3();
+      pos[i3] = patternPt.x;
+      pos[i3 + 1] = patternPt.y;
+      pos[i3 + 2] = patternPt.z;
       
-      pos[i3] = r * Math.sin(phi) * Math.cos(theta);
-      pos[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i3 + 2] = r * Math.cos(phi);
-      
-      // 감정에 따른 색상 선택
+      // 감정에 따른 고정 색상 선택
       const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
       const emotionColorSet = getEmotionColor(randomEmotion);
       const colorHex = emotionColorSet[Math.floor(Math.random() * emotionColorSet.length)];
@@ -574,10 +562,10 @@ const fusedShape = (n: number): THREE.Vector3[] => {
       col[i3 + 1] = color.g;
       col[i3 + 2] = color.b;
       
-      size[i] = 0.5 + Math.random() * 1.0; // 작은 크기
+      size[i] = 1.0 + Math.random() * 2.0; // 더 큰 크기
       rnd[i3] = Math.random() * 10;
       rnd[i3 + 1] = Math.random() * Math.PI * 2;
-      rnd[i3 + 2] = 0.3 + 0.4 * Math.random(); // 약간 느린 움직임
+      rnd[i3 + 2] = 0.5 + 0.5 * Math.random();
     }
     
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
@@ -594,18 +582,18 @@ const fusedShape = (n: number): THREE.Vector3[] => {
         varying vec3 vCol;
         varying float vR;
         void main(){
-          vCol=color;
+          vCol=color; // 고정된 감정 색상 사용
           vR=random.z;
           vec3 p=position;
-          float t=time*0.15*random.z; // 느린 움직임
+          float t=time*0.1*random.z; // 더 느린 움직임
           float ax=t+random.y, ay=t*0.75+random.x;
-          float amp=0.8*random.z; // 작은 진폭
-          p.x+=sin(ax+p.y*0.03)*amp;
-          p.y+=cos(ay+p.z*0.03)*amp;
-          p.z+=sin(ax*0.85+p.x*0.03)*amp;
+          float amp=1.0*random.z; // 더 큰 진폭
+          p.x+=sin(ax+p.y*0.02)*amp;
+          p.y+=cos(ay+p.z*0.02)*amp;
+          p.z+=sin(ax*0.85+p.x*0.02)*amp;
           vec4 mv=modelViewMatrix*vec4(p,1.);
-          float pulse=0.9+0.1*sin(time*0.8+random.y);
-          gl_PointSize=size*pulse*(200./-mv.z);
+          float pulse=0.95+0.05*sin(time*0.5+random.y); // 더 부드러운 펄스
+          gl_PointSize=size*pulse*(300./-mv.z); // 더 큰 크기
           gl_Position=projectionMatrix*mv;
         }`,
       fragmentShader: `
@@ -615,11 +603,12 @@ const fusedShape = (n: number): THREE.Vector3[] => {
         void main(){
           vec2 uv=gl_PointCoord-0.5;
           float d=length(uv);
-          float core=smoothstep(0.1,0.0,d);
-          float glow=smoothstep(0.4,0.1,d)*0.3;
+          float core=smoothstep(0.15,0.0,d);
+          float glow=smoothstep(0.5,0.1,d)*0.4;
           float alpha=core+glow;
           if(alpha<0.01)discard;
-          gl_FragColor=vec4(vCol,alpha*0.7);
+          // 고정된 감정 색상 사용 (시간에 따른 색상 변화 완전 제거)
+          gl_FragColor=vec4(vCol,alpha*0.8);
         }`,
       transparent: true,
       depthWrite: false,
@@ -659,6 +648,20 @@ const fusedShape = (n: number): THREE.Vector3[] => {
         particlesRef.current.geometry.attributes.position.needsUpdate = true;
         sparklesRef.current.geometry.attributes.position.needsUpdate = true;
       }
+      
+      // 감정 파티클도 모핑 애니메이션 적용
+      if (emotionParticlesRef.current && emotionParticlesRef.current.userData) {
+        const { from: emotionFrom, to: emotionTo } = emotionParticlesRef.current.userData;
+        if (emotionTo) {
+          const emotionArr = emotionParticlesRef.current.geometry.attributes.position.array as Float32Array;
+          for (let i = 0; i < emotionArr.length; i++) {
+            const val = emotionFrom[i] + (emotionTo[i] - emotionFrom[i]) * eased;
+            emotionArr[i] = val;
+          }
+          emotionParticlesRef.current.geometry.attributes.position.needsUpdate = true;
+        }
+      }
+      
       if (progRef.current >= 1) {
         currentPatternRef.current = particlesRef.current.userData.next;
         isTransRef.current = false;
@@ -697,6 +700,7 @@ const fusedShape = (n: number): THREE.Vector3[] => {
     controlsRef.current.autoRotateSpeed = 0.5;
 
     // Create objects
+    // 기본 별들과 파티클 시스템 복원
     starsRef.current = createStars();
     sceneRef.current.add(starsRef.current);
 
@@ -716,12 +720,13 @@ const fusedShape = (n: number): THREE.Vector3[] => {
     const allColors = [...basePalette, ...emotionColorArray.slice(0, Math.floor(basePalette.length * 0.5))];
     const palette = allColors.map(c => new THREE.Color(c));
     
+    // 원래 파티클 시스템 복원
     particlesRef.current = makeParticles(PARTICLE_COUNT, palette);
     sparklesRef.current = createSparkles(SPARK_COUNT);
     sceneRef.current.add(particlesRef.current);
     sceneRef.current.add(sparklesRef.current);
 
-    // 감정 파티클 생성 및 추가
+    // 감정 파티클 생성 및 추가 (오직 데이터베이스 기반)
     const emotionParticles = createEmotionParticles();
     if (emotionParticles) {
       emotionParticlesRef.current = emotionParticles;
