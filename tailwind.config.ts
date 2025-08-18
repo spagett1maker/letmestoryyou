@@ -11,6 +11,19 @@ const config: Config = {
       fontFamily: {
         'pixel-font': ['Pixel'],
       },
+      animation: {
+        'fall': 'fall linear infinite',
+      },
+      keyframes: {
+        fall: {
+          '0%': {
+            transform: 'translateY(-100vh)',
+          },
+          '100%': {
+            transform: 'translateY(100vh)',
+          },
+        },
+      },
     },
   },
   plugins: [

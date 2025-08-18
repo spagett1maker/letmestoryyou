@@ -151,26 +151,17 @@ export default function Home() {
     if (!question || !answer.trim()) return
     setLoading(true)
 
-    const res = await fetch('/api/answer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question_id: question.id,
-        answer_text: answer,
-        encrypted_answer: encryptAnswerFancy(answer),
-        user_id: user_id
-      }),
-    })
+    // 답변 데이터를 localStorage에 임시 저장
+    localStorage.setItem('temp_answer_data', JSON.stringify({
+      question_id: question.id,
+      answer_text: answer,
+      encrypted_answer: encryptAnswerFancy(answer),
+      user_id: user_id
+    }))
 
-    const data = await res.json()
     setLoading(false)
-
-    if (res.ok) {
-      //router.push(`/end?key=${user_id}`)
-      window.location.href = '/end'
-    } else {
-      alert('답변 저장 실패: ' + data.error)
-    }
+    // 바로 end 페이지로 이동
+    window.location.href = '/end'
   }
   
   return (

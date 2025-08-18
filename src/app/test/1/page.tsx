@@ -71,6 +71,29 @@ export default function MorphingShapes() {
     return normalise(pts, 60);
   }
 
+  const test = (n: number): THREE.Vector3[] => {
+    const pts: THREE.Vector3[] = [];
+    let x = -0.5, y = 0.1, z = 0.6;
+    const a = 8;
+    const r = 28;
+    const b = 8/3;
+    const dt = 0.005;
+    for (let i = 0; i < n * 25; i++) {
+      const dx = a*(y-x);
+      const dy = r*x - y - x*z;
+      const dz = x*y - b*z;
+      x += dx * dt;
+      y += dy * dt;
+      z += dz * dt;
+      if (i > 200 && i % 25 === 0) {
+        pts.push(new THREE.Vector3(x, y, z));
+      }
+      if (pts.length >= n) break;
+    }
+    while(pts.length < n) pts.push(pts[Math.floor(Math.random()*pts.length)].clone());
+    return normalise(pts, 60);
+  }
+
   const dualHelix = (n: number): THREE.Vector3[] => {
     const pts: THREE.Vector3[] = [];
     const turns = 5;
@@ -103,7 +126,84 @@ export default function MorphingShapes() {
     return normalise(pts, 55);
   }
 
-  const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong];
+  // A(test), B(dualHelix), C(deJong)을 하나로 섞은 단일 패턴
+const fusedShape = (n: number): THREE.Vector3[] => {
+  // 각 베이스 패턴에서 같은 개수의 포인트를 뽑음
+  const A = test(n);
+  const B = dualHelix(n);
+  const C = deJong(n);
+
+  const pts: THREE.Vector3[] = new Array(n);
+  const width = 0.5; // 가중치 삼각창의 폭(넓힐수록 전환이 완만)
+  const smooth = (x: number) => x * x * (3 - 2 * x); // smoothstep
+  const tri = (t: number, center: number) => {
+    const v = Math.max(0, 1 - Math.abs(t - center) / width); // 삼각창
+    return smooth(v);
+  };
+
+  for (let i = 0; i < n; i++) {
+    const t = n > 1 ? i / (n - 1) : 0;
+    let wA = tri(t, 0.0);  // 초반엔 A 비중
+    let wB = tri(t, 0.5);  // 중간엔 B 비중
+    let wC = tri(t, 1.0);  // 후반엔 C 비중
+    const s = wA + wB + wC || 1;
+    wA /= s; wB /= s; wC /= s;
+
+    const p = new THREE.Vector3(0, 0, 0)
+      .addScaledVector(A[i], wA)
+      .addScaledVector(B[i], wB)
+      .addScaledVector(C[i], wC);
+
+    pts[i] = p;
+  }
+
+  return normalise(pts, 60); // 최종 스케일 정리
+};
+
+  // Lorenz + sinusoidal forcing (네가 올린 수식) → 하나의 패턴 함수
+  // x' = σ(-x + y) + κ sin(y/5) sin(z/5)
+  // y' = - x z + ρ x - y + κ sin(x/5) sin(z/5)
+  // z' = x y - β z + κ cos(y/5) cos(x/5)
+  const lorenzSinForcing = (n: number): THREE.Vector3[] => {
+    const pts: THREE.Vector3[] = [];
+    // 초기값은 보기 좋게 약간 치우치게
+    let x = -0.5, y = 0.1, z = 0.6;
+
+    // 파라미터(원하면 조절 가능)
+    const sigma = 1;     // σ
+    const rho   = 30;     // ρ
+    const beta  = 8/3;    // β
+    const kappa = 200;    // κ : 외력 세기
+
+    // 적분/샘플 파라미터 (test와 동일한 스타일)
+    const dt = 0.01;     // 스텝
+    const every = 50;     // 몇 스텝마다 1점 샘플
+    const warmup = 1000;   // 초기 버닝 스텝 수(every 단위 기준이면 400*25=10000스텝쯤)
+
+    for (let i = 0; i < n * every + warmup * every; i++) {
+      const dx = sigma * (-x + y) + kappa * Math.sin(y / 5) * Math.sin(z / 5);
+      const dy = -x * z + rho * x - y + kappa * Math.sin(x / 5) * Math.sin(z / 5);
+      const dz = x * y - beta * z + kappa * Math.cos(y / 5) * Math.cos(x / 5);
+
+      x += dx * dt;
+      y += dy * dt;
+      z += dz * dt;
+
+      // warmup 이후부터 매 every번째마다 샘플 저장
+      if (i > warmup * every && i % every === 0) {
+        pts.push(new THREE.Vector3(x, y, z));
+        if (pts.length >= n) break;
+      }
+    }
+
+    // 부족하면 복제해서 채우기(네 다른 패턴과 동일한 처리)
+    while (pts.length < n) pts.push(pts[(Math.random() * pts.length) | 0].clone());
+    return normalise(pts, 60);
+  };
+
+
+
+  const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong, test, lorenzSinForcing];
 
   const createStars = (): THREE.Points => {
     const geo = new THREE.BufferGeometry();

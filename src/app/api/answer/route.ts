@@ -19,18 +19,24 @@ async function getClassifier() {
 }
 
 export async function POST(req: Request) {
-  const { question_id, answer_text, encrypted_answer, user_id } = await req.json()
+  const { question_id, answer_text, encrypted_answer, user_id, emotion } = await req.json()
 
   if (!question_id || !answer_text) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
   }
 
-  // ✅ 무료 감정 분석 수행
-  const sentimentPipeline = await getClassifier()
-  const result = await sentimentPipeline(answer_text)
-
-  // result: [{ label: 'POSITIVE', score: 0.98 }]
-  const sentiment = result?.[0]?.label?.toLowerCase() || 'neutral'
+  // 사용자가 선택한 감정이 있으면 사용, 없으면 자동 분석
+  let sentiment = 'neutral'
+  
+  if (emotion) {
+    // 사용자가 감정을 선택한 경우
+    sentiment = emotion
+  } else {
+    // 감정이 선택되지 않은 경우 자동 분석 (기존 로직)
+    const sentimentPipeline = await getClassifier()
+    const result = await sentimentPipeline(answer_text)
+    sentiment = result?.[0]?.label?.toLowerCase() || 'neutral'
+  }
 
   // secret_key 생성
   const secret_key = uuidv4()
