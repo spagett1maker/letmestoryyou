@@ -28,19 +28,29 @@ export default function MorphingShapes() {
   const progRef = useRef(0)
   const morphSpeed = 0.03
   
-  // 감정 데이터 상태
+  // 감정 데이터 상태 (감정명과 개수, 또는 sentiment 분류와 개수)
   const [emotionData, setEmotionData] = useState<{ [key: string]: number }>({})
   
   // 감정별 색상 매핑 (동적으로 감정을 분류)
   const getEmotionColor = useCallback((emotion: string): number[] => {
     const emotionLower = emotion.toLowerCase();
     
+    // sentiment 기반 분류 (API에서 positive/negative로 분류된 경우)
+    if (emotionLower === 'positive') {
+      // 긍정적 sentiment - 밝은 노란색, 초록색, 주황색 계열
+      return [[0xFFD700, 0xFFA500, 0xFFE135], [0x32CD32, 0x90EE90, 0x7CFC00], [0xFF8C00, 0xFFA500, 0xFFB347]][Math.floor(Math.random() * 3)];
+    }
+    
+    if (emotionLower === 'negative') {
+      // 부정적 sentiment - 빨간색, 진한 파란색, 보라색 계열
+      return [[0xFF0000, 0xDC143C, 0xB22222], [0x0000CD, 0x4169E1, 0x1E90FF], [0x8B008B, 0x9932CC, 0x8A2BE2]][Math.floor(Math.random() * 3)];
+    }
+    
     // 긍정적 감정들 - 따뜻한 색상
     const positiveEmotions = ['기쁨', '사랑', '만족', '감격', '들뜸', '반가움', '뿌듯', '유쾌', '행복', '좋다', '싱글벙글', '흐뭇', '웃음', '재미', '흥미', '설렘', '친밀감', '희망', '갈망', '소망', '꿈', 'lovely', 'cute', 'want'];
     if (positiveEmotions.some(pos => emotionLower.includes(pos.toLowerCase()))) {
-      return [0xFFD700, 0xFF69B4, 0x98FB98, 0xFF7F50, 0xDDA0DD, 0x20B2AA][Math.floor(Math.random() * 6)] ? 
-        [[0xFFD700, 0xFFA500, 0xFFB347], [0xFF69B4, 0xFF1493, 0xFF6B6B], [0x98FB98, 0x90EE90, 0x7CFC00], 
-         [0xFF7F50, 0xFF4500, 0xFF6347], [0xDDA0DD, 0xBA55D3, 0x9370DB], [0x20B2AA, 0x48D1CC, 0x40E0D0]][Math.floor(Math.random() * 6)] : [0xFFD700, 0xFFA500, 0xFFB347];
+      return [[0xFFD700, 0xFFA500, 0xFFB347], [0xFF69B4, 0xFF1493, 0xFF6B6B], [0x98FB98, 0x90EE90, 0x7CFC00], 
+              [0xFF7F50, 0xFF4500, 0xFF6347], [0xDDA0DD, 0xBA55D3, 0x9370DB], [0x20B2AA, 0x48D1CC, 0x40E0D0]][Math.floor(Math.random() * 6)];
     }
     
     // 부정적 감정들 - 차가운/어두운 색상  
@@ -190,7 +200,28 @@ export default function MorphingShapes() {
         const response = await fetch('/api/emotions');
         if (response.ok) {
           const data = await response.json();
-          setEmotionData(data.emotions);
+          console.log('감정 데이터 로드됨:', data);
+          
+          // 감정 데이터와 sentiment 데이터를 모두 처리
+          const processedData: { [key: string]: number } = {};
+          
+          // 기존 감정 데이터 처리
+          if (data.emotions) {
+            Object.assign(processedData, data.emotions);
+          }
+          
+          // sentiment 데이터 처리 (positive/negative 분류)
+          if (data.sentiments) {
+            Object.assign(processedData, data.sentiments);
+          }
+          
+          // 만약 다른 형태의 데이터 구조라면 여기서 처리
+          if (data.sentiment_analysis) {
+            Object.assign(processedData, data.sentiment_analysis);
+          }
+          
+          console.log('처리된 감정 데이터:', processedData);
+          setEmotionData(processedData);
         }
       } catch (error) {
         console.error('감정 데이터 가져오기 실패:', error);
@@ -199,6 +230,14 @@ export default function MorphingShapes() {
     
     fetchEmotions();
   }, []);
+
+  // 감정 데이터가 로드되면 파티클에 색상 적용
+  useEffect(() => {
+    if (particlesRef.current && Object.keys(emotionData).length > 0) {
+      console.log('파티클에 색상 적용 중...', emotionData);
+      applyEmotionColors(particlesRef.current, emotionData);
+    }
+  }, [emotionData, getEmotionColor]);
 
 
   const createStars = (): THREE.Points => {
@@ -268,51 +307,19 @@ export default function MorphingShapes() {
     return new THREE.Points(geo, mat);
   }
 
-  const makeParticlesWithEmotions = (count: number, palette: THREE.Color[], emotionData: { [key: string]: number }): THREE.Points => {
+  const makeParticles = (count: number): THREE.Points => {
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     const size = new Float32Array(count);
     const rnd = new Float32Array(count * 3);
     
-    // 감정 배열 생성 (가중치 적용)
-    const emotions: string[] = [];
-    Object.entries(emotionData).forEach(([emotion, emotionCount]) => {
-      for (let i = 0; i < emotionCount; i++) {
-        emotions.push(emotion);
-      }
-    });
-    
-    // 전체 감정 개수 계산
-    const totalEmotionCount = emotions.length;
-    const emotionParticleCount = Math.min(Math.max(totalEmotionCount * 2, 50), Math.floor(count * 0.3)); // 전체의 30% 또는 감정 개수의 2배
-    
+    // 모든 파티클을 기본 흰색으로 초기화하고 size, random 속성 설정
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      
-      // 일부 파티클을 감정 기반 색상으로 설정
-      if (i < emotionParticleCount && emotions.length > 0) {
-        // 감정 기반 색상
-        const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-        const emotionColorSet = getEmotionColor(randomEmotion);
-        const colorHex = emotionColorSet[Math.floor(Math.random() * emotionColorSet.length)];
-        const c = new THREE.Color(colorHex);
-        col[i3] = c.r;
-        col[i3 + 1] = c.g;
-        col[i3 + 2] = c.b;
-      } else {
-        // 기본 palette 색상
-        const base = palette[Math.random() * palette.length | 0];
-        const hsl = { h: 0, s: 0, l: 0 };
-        base.getHSL(hsl);
-        hsl.h += (Math.random() - 0.5) * 0.05;
-        hsl.s = Math.min(1, Math.max(0.7, hsl.s + (Math.random() - 0.5) * 0.3));
-        hsl.l = Math.min(0.9, Math.max(0.5, hsl.l + (Math.random() - 0.5) * 0.4));
-        const c = new THREE.Color().setHSL(hsl.h, hsl.s, hsl.l);
-        col[i3] = c.r;
-        col[i3 + 1] = c.g;
-        col[i3 + 2] = c.b;
-      }
+      col[i3] = 1.0;     // r
+      col[i3 + 1] = 1.0; // g
+      col[i3 + 2] = 1.0; // b
       
       size[i] = 0.7 + Math.random() * 1.1;
       rnd[i3] = Math.random() * 10;
@@ -326,7 +333,7 @@ export default function MorphingShapes() {
     geo.setAttribute("random", new THREE.BufferAttribute(rnd, 3));
     
     const mat = new THREE.ShaderMaterial({
-      uniforms: { time: { value: 0 }, hueSpeed: { value: 0.12 } },
+      uniforms: { time: { value: 0 } },
       vertexShader: `
         uniform float time;
         attribute float size;
@@ -350,16 +357,8 @@ export default function MorphingShapes() {
         }`,
       fragmentShader: `
         uniform float time;
-        uniform float hueSpeed;
         varying vec3 vCol;
         varying float vR;
-
-        vec3 hueShift(vec3 c, float h) {
-          const vec3 k = vec3(0.57735);
-          float cosA = cos(h);
-          float sinA = sin(h);
-          return c * cosA + cross(k, c) * sinA + k * dot(k, c) * (1.0 - cosA);
-        }
 
         void main() {
           vec2 uv = gl_PointCoord - 0.5;
@@ -373,7 +372,8 @@ export default function MorphingShapes() {
           
           float alpha = core * 1.0 + flare * 0.5 + glow * 0.2;
           
-          vec3 color = hueShift(vCol, time * hueSpeed);
+          // 색상 변경 없이 원래 색상 사용
+          vec3 color = vCol;
           vec3 finalColor = mix(color, vec3(1.0, 0.95, 0.9), core);
           finalColor = mix(finalColor, color, flare * 0.5 + glow * 0.5);
 
@@ -390,6 +390,69 @@ export default function MorphingShapes() {
     return new THREE.Points(geo, mat);
   }
 
+  // shape 파티클에 감정 색상 적용하는 함수
+  const applyEmotionColors = (particles: THREE.Points, emotionData: { [key: string]: number }) => {
+    if (!particles || !particles.geometry) return;
+    
+    const colorAttribute = particles.geometry.attributes.color as THREE.BufferAttribute;
+    const colors = colorAttribute.array as Float32Array;
+    const particleCount = colors.length / 3;
+    
+    console.log('파티클 개수:', particleCount, '감정 데이터:', emotionData);
+    
+    // 모든 파티클을 흰색으로 초기화
+    for (let i = 0; i < particleCount; i++) {
+      const i3 = i * 3;
+      colors[i3] = 1.0;     // r
+      colors[i3 + 1] = 1.0; // g
+      colors[i3 + 2] = 1.0; // b
+    }
+    
+    // 테스트: 처음 100개 파티클을 빨간색으로 설정
+    for (let i = 0; i < Math.min(100, particleCount); i++) {
+      const i3 = i * 3;
+      colors[i3] = 1.0;     // r
+      colors[i3 + 1] = 0.0; // g
+      colors[i3 + 2] = 0.0; // b
+    }
+    
+    // 데이터베이스 감정 개수만큼 랜덤 파티클 선택해서 색상 변경
+    const emotionEntries = Object.entries(emotionData);
+    const usedIndices = new Set<number>();
+    let totalApplied = 0;
+    
+    emotionEntries.forEach(([emotion, emotionCount]) => {
+      for (let j = 0; j < emotionCount; j++) {
+        if (totalApplied >= particleCount - 100) break; // 테스트 파티클 영역 피하기
+        
+        // 아직 색상이 변경되지 않은 파티클 인덱스 랜덤 선택
+        let randomIndex;
+        let attempts = 0;
+        do {
+          randomIndex = Math.floor(Math.random() * (particleCount - 100)) + 100; // 100번째 이후부터 선택
+          attempts++;
+        } while (usedIndices.has(randomIndex) && attempts < 100);
+        
+        if (attempts >= 100) break;
+        
+        usedIndices.add(randomIndex);
+        
+        // 선택된 파티클에 감정 색상 적용
+        const i3 = randomIndex * 3;
+        const emotionColorSet = getEmotionColor(emotion);
+        const colorHex = emotionColorSet[Math.floor(Math.random() * emotionColorSet.length)];
+        const c = new THREE.Color(colorHex);
+        
+        colors[i3] = c.r;
+        colors[i3 + 1] = c.g;
+        colors[i3 + 2] = c.b;
+        totalApplied++;
+      }
+    });
+    
+    console.log('색상 적용된 파티클 수:', totalApplied + 100);
+    colorAttribute.needsUpdate = true;
+  }
 
   const createSparkles = (count: number): THREE.Points => {
     const geo = new THREE.BufferGeometry();
@@ -559,24 +622,8 @@ export default function MorphingShapes() {
     starsRef.current = createStars();
     sceneRef.current.add(starsRef.current);
 
-    // 기본 palette에 감정 색상 추가
-    const basePalette = [0xff3c78, 0xff8c00, 0xfff200, 0x00cfff, 0xb400ff, 0xffffff, 0xff4040];
-    const emotionColorArray: number[] = [];
-    
-    // 감정 데이터에서 색상 추출
-    if (Object.keys(emotionData).length > 0) {
-      Object.keys(emotionData).forEach(emotion => {
-        const colors = getEmotionColor(emotion);
-        emotionColorArray.push(...colors.slice(0, 2)); // 각 감정에서 2개씩만
-      });
-    }
-    
-    // 전체 palette 구성 (기본 70% + 감정 30%)
-    const allColors = [...basePalette, ...emotionColorArray.slice(0, Math.floor(basePalette.length * 0.5))];
-    const palette = allColors.map(c => new THREE.Color(c));
-    
-    // 감정 데이터를 포함한 파티클 시스템 생성
-    particlesRef.current = makeParticlesWithEmotions(PARTICLE_COUNT, palette, emotionData);
+    // shape 파티클 시스템 생성
+    particlesRef.current = makeParticles(PARTICLE_COUNT);
     sparklesRef.current = createSparkles(SPARK_COUNT);
     sceneRef.current.add(particlesRef.current);
     sceneRef.current.add(sparklesRef.current);
