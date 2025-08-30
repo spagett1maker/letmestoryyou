@@ -3,6 +3,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import styles from "@/components/pixel.module.css";
+import Image from "next/image";
 
 // A polished, high-performance snowfall animation page for Next.js (App Router)
 // Inspired by alphardex's CodePen, implemented with canvas & requestAnimationFrame.
@@ -117,7 +119,10 @@ export default function SnowPage() {
         }
       }
 
-      window.location.href = '/list';
+      // 2초 기다린 후 다음 페이지로 이동
+      setTimeout(() => {
+        window.location.href = '/list';
+      }, 2000);
     };
 
     const rand = (min: number, max: number) => Math.random() * (max - min) + min;
@@ -453,6 +458,14 @@ export default function SnowPage() {
           </p>
         )}
       </section> */}
+      <div className={`${styles.container}`}>
+
+        <div className={`${styles.pixel2} text-black`}>
+          잠깐, 감정 하나만 건네주실래요?
+          <br />
+          말로 하기 어려운 마음도 괜찮아요.
+        </div>
+      </div>
 
       {/* Snow Layer - 클릭 가능하도록 수정 */}
       <canvas
@@ -466,13 +479,24 @@ export default function SnowPage() {
         }}
       />
       
+      {/* space.gif - 감정 선택 전에만 보이기 */}
+      {!selectedEmotion && (
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10">
+          <Image src="/space.gif" alt="space" className="w-48 h-48" width={640} height={640} />
+        </div>
+      )}
+      
       {/* 선택된 감정 표시 */}
       {selectedEmotion && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-          <div className="bg-black/80 text-white px-8 py-4 rounded-lg text-2xl text-center">
+          <div className="bg-black/80 text-white px-8 py-4 rounded-lg text-xl text-center">
             <p className="mb-4">선택한 감정:</p>
-            <p className="text-3xl font-bold">{selectedEmotion}</p>
-            <p className="mt-4 text-sm text-gray-300">데이터베이스에 저장되었습니다.</p>
+            <p className="text-xl font-bold">{selectedEmotion}</p>
+            <p className="mt-4 text-xs text-gray-300 whitespace-nowrap">
+              당신의 감정은 이곳에 잠시 머물다 자연스레 흘러갑니다. <br/>
+              우리는 그 이야기를 붙잡지 않아요. <br/>
+              당신은 그저 바라보고 보내주면 됩니다.
+            </p>
           </div>
         </div>
       )}

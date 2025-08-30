@@ -1,0 +1,309 @@
+/* app/pixel/pixel.module.css */
+
+.container {
+  margin: 84px auto 50px auto;
+  display: flex;
+  width: 400px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+/* 모바일 최적화 스타일 */
+@media (max-width: 768px) {
+  .container {
+    margin: 54px auto 20px auto;
+    width: 90%;
+    max-width: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .pixel,
+  .pixel2 {
+    font-size: 18px !important;
+    margin: 6px !important;
+  }
+  
+  .pixel {
+    border-width: 15px !important;
+    -moz-border-image: url(https://i.imgur.com/sREM8Yn.png) 15 stretch !important;
+    -webkit-border-image: url(https://i.imgur.com/sREM8Yn.png) 15 stretch !important;
+    -o-border-image: url(https://i.imgur.com/sREM8Yn.png) 15 stretch !important;
+    border-image: url(https://i.imgur.com/sREM8Yn.png) 15 stretch !important;
+  }
+  
+  .pixel p {
+    margin: -15px -15px !important;
+    line-height: 15px !important;
+    padding: 8px 15px !important;
+    font-size: 14px !important;
+  }
+  
+  .pixel2::before {
+    top: 8px !important;
+    bottom: 8px !important;
+    left: -8px !important;
+    right: -8px !important;
+  }
+  
+  .pixel2::after {
+    top: 3px !important;
+    bottom: 3px !important;
+    left: -5px !important;
+    right: -5px !important;
+  }
+  
+  .pixel2 {
+    padding: 8px 8px !important;
+    font-size: 16px !important;
+    display: block !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    width: fit-content !important;
+  }
+}
+
+/* 태블릿 최적화 스타일 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    margin: 64px auto 30px auto;
+    width: 80%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .pixel,
+  .pixel2 {
+    font-size: 18px;
+    margin: 8px;
+  }
+  
+  .pixel {
+    border-width: 18px;
+    -moz-border-image: url(https://i.imgur.com/sREM8Yn.png) 18 stretch;
+    -webkit-border-image: url(https://i.imgur.com/sREM8Yn.png) 18 stretch;
+    -o-border-image: url(https://i.imgur.com/sREM8Yn.png) 18 stretch;
+    border-image: url(https://i.imgur.com/sREM8Yn.png) 18 stretch;
+  }
+  
+  .pixel p {
+    margin: -18px -18px;
+    line-height: 18px;
+    padding: 9px 18px;
+  }
+  
+  .pixel2::before {
+    top: 9px;
+    bottom: 9px;
+    left: -9px;
+    right: -9px;
+  }
+  
+  .pixel2::after {
+    top: 4px;
+    bottom: 4px;
+    left: -6px;
+    right: -6px;
+  }
+  
+  .pixel2 {
+    padding: 9px 9px;
+    display: inline-block;
+    text-align: center;
+  }
+}
+
+/* 작은 모바일 화면 최적화 */
+@media (max-width: 480px) {
+  .container {
+    margin: 49px auto 15px auto;
+    width: 95%;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .pixel,
+  .pixel2 {
+    font-size: 16px !important;
+    margin: 4px !important;
+  }
+  
+  .pixel {
+    border-width: 12px !important;
+    -moz-border-image: url(https://i.imgur.com/sREM8Yn.png) 12 stretch !important;
+    -webkit-border-image: url(https://i.imgur.com/sREM8Yn.png) 12 stretch !important;
+    -o-border-image: url(https://i.imgur.com/sREM8Yn.png) 12 stretch !important;
+    border-image: url(https://i.imgur.com/sREM8Yn.png) 12 stretch !important;
+  }
+  
+  .pixel p {
+    margin: -12px -12px !important;
+    line-height: 12px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+  
+  .pixel2::before {
+    top: 6px !important;
+    bottom: 6px !important;
+    left: -6px !important;
+    right: -6px !important;
+  }
+  
+  .pixel2::after {
+    top: 2px !important;
+    bottom: 2px !important;
+    left: -4px !important;
+    right: -4px !important;
+  }
+  
+  .pixel2 {
+    padding: 6px 6px !important;
+    font-size: 14px !important;
+    display: block !important;
+    text-align: center !important;
+    margin: 0 auto !important;
+    width: fit-content !important;
+  }
+}
+
+/* 터치 최적화 */
+@media (hover: none) and (pointer: coarse) {
+  .pixel,
+  .pixel2 {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .pixel:active,
+  .pixel2:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}
+
+.pixel,
+.pixel2 {
+  font-size: 20px;
+  color: black;
+  height: auto;
+  margin: 10px;
+
+  /* font는 next/font로 주입하므로 여기선 굳이 지정 안 해도 됩니다.
+     남겨도 문제는 없지만, 충돌 피하려면 주석으로 둡니다. */
+  /* font-family: 'VT323'; */
+
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.pixel:active,
+.pixel2:active {
+  top: 2px;
+}
+
+.pixel {
+  line-height: 0;
+
+  image-rendering: optimizeSpeed;
+  image-rendering: -moz-crisp-edges; /* Firefox */
+  image-rendering: -o-crisp-edges; /* Opera */
+  image-rendering: -webkit-optimize-contrast; /* Webkit (non-standard naming) */
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor; /* IE (non-standard property) */
+
+  border-style: solid;
+  border-width: 20px;
+  -moz-border-image: url(https://i.imgur.com/sREM8Yn.png) 20 stretch;
+  -webkit-border-image: url(https://i.imgur.com/sREM8Yn.png) 20 stretch;
+  -o-border-image: url(https://i.imgur.com/sREM8Yn.png) 20 stretch;
+  border-image: url(https://i.imgur.com/sREM8Yn.png) 20 stretch;
+}
+
+.pixel p {
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  width: auto;
+  text-align: center;
+  margin: -20px -20px;
+  line-height: 20px;
+  padding: 10px 20px;
+
+  background: rgba(0, 0, 0, 0.7);
+
+  background-size: 50% 50%;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(circle at 0 0, rgba(204,0,0,0) 14px, rgba(0, 0, 0, 0.7) 15px),
+    radial-gradient(circle at 100% 0, rgba(204,0,0,0) 14px, rgba(0, 0, 0, 0.7) 15px),
+    radial-gradient(circle at 100% 100%, rgba(204,0,0,0) 14px, rgba(0, 0, 0, 0.7) 15px),
+    radial-gradient(circle at 0 100%, rgba(204,0,0,0) 14px, rgba(0, 0, 0, 0.7) 15px);
+}
+
+.pixel2 {
+  position: relative;
+  display: block;
+  margin: 10px auto;
+  /* font-family: 'VT323'; */
+  text-transform: uppercase;
+
+  font-size: 20px;
+  color: black;
+  width: fit-content;
+}
+
+.pixel2::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: -10px;
+  right: -10px;
+  background: #FFFFFF;
+  z-index: -1;
+}
+
+.pixel2::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: -6px;
+  right: -6px;
+  background: #FFFFFF;
+  z-index: -1;
+}
+
+.pixel2 {
+  padding: 10px 10px;
+  position: relative;
+  background: #FFFFFF;
+  width: fit-content;
+  z-index: 2;
+  text-align: center;
+}
