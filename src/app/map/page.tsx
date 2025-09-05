@@ -191,7 +191,8 @@ export default function MorphingShapes() {
 
 
 
-  const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong, lorenzSinForcing];
+  //const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong, lorenzSinForcing];
+  const PATTERNS = [lorenzSinForcing];
 
   // 감정 데이터 가져오기
   useEffect(() => {
