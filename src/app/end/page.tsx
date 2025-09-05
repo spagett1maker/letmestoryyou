@@ -482,7 +482,7 @@ export default function SnowPage() {
       {/* space.gif - 감정 선택 전에만 보이기 */}
       {!selectedEmotion && (
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10">
-          <Image src="/space.gif" alt="space" className="w-48 h-48" width={640} height={640} />
+          <Image src="/space.gif" alt="space" className="md:w-48 md:h-48 w-32 h-32" width={640} height={640} />
         </div>
       )}
       
