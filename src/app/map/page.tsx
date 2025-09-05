@@ -422,6 +422,10 @@ export default function MorphingShapes() {
     const usedIndices = new Set<number>();
     let totalApplied = 0;
     
+    // 감정 파티클의 크기를 3배로 키우기 위해 size 속성도 수정
+    const sizeAttribute = particles.geometry.attributes.size as THREE.BufferAttribute;
+    const sizes = sizeAttribute.array as Float32Array;
+    
     emotionEntries.forEach(([emotion, emotionCount]) => {
       for (let j = 0; j < emotionCount; j++) {
         if (totalApplied >= particleCount - 100) break; // 테스트 파티클 영역 피하기
@@ -447,9 +451,16 @@ export default function MorphingShapes() {
         colors[i3] = c.r;
         colors[i3 + 1] = c.g;
         colors[i3 + 2] = c.b;
+        
+        // 감정 파티클의 크기를 3배로 증가
+        sizes[randomIndex] *= 3.0;
+        
         totalApplied++;
       }
     });
+    
+    // size 속성 업데이트
+    sizeAttribute.needsUpdate = true;
     
     console.log('색상 적용된 파티클 수:', totalApplied + 100);
     colorAttribute.needsUpdate = true;

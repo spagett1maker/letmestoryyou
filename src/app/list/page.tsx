@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, Play, Pause, RotateCcw, Clock, AlertCircle, Monitor } from "lucide-react"
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -325,13 +326,11 @@ export default function AnswerParticles() {
           >
             <div
               
-              className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md mx-4 text-center px-4"
+              className="bg-black/80 border border-gray-800 rounded-lg p-6 max-w-md mx-4 text-center px-4"
             >
-              <div className="mb-4">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-white mb-2">감정이 무사히 건너갔습니다.</h2>
+              <div className="mb-4 flex flex-col items-center">
+                <Image src="/bonusrun.gif" alt="space" className="w-28 h-28 mx-auto mb-4" width={640} height={640} />
+                <h2 className="text-xl font-bold text-cyan-100 mb-2">감정이 무사히 건너갔습니다.</h2>
                 <div className="my-4 text-xs text-gray-500 w-full">
                   당신의 감정 키 : {bonus_user_id}
                 </div>

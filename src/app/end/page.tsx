@@ -488,7 +488,7 @@ export default function SnowPage() {
       
       {/* 선택된 감정 표시 */}
       {selectedEmotion && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 border border-gray-800 rounded-lg p-4 bg-black/80">
           <div className="bg-black/80 text-white px-8 py-4 rounded-lg text-xl text-center">
             <p className="mb-4">선택한 감정:</p>
             <p className="text-xl font-bold">{selectedEmotion}</p>
