@@ -78,73 +78,73 @@ export default function MorphingShapes() {
     return points.map(p => p.clone().sub(centre).multiplyScalar(size / maxDim));
   }
 
-  const torusKnot = (n: number): THREE.Vector3[] => {
-    const geometry = new THREE.TorusKnotGeometry(10, 3, 200, 16, 2, 3);
-    const points: THREE.Vector3[] = [];
-    const positionAttribute = geometry.attributes.position;
-    for (let i = 0; i < positionAttribute.count; i++) {
-      points.push(new THREE.Vector3().fromBufferAttribute(positionAttribute, i));
-    }
-    const result: THREE.Vector3[] = [];
-    for (let i = 0; i < n; i++) {
-      result.push(points[i % points.length].clone());
-    }
-    return normalise(result, 50);
-  }
+  // const torusKnot = (n: number): THREE.Vector3[] => {
+  //   const geometry = new THREE.TorusKnotGeometry(10, 3, 200, 16, 2, 3);
+  //   const points: THREE.Vector3[] = [];
+  //   const positionAttribute = geometry.attributes.position;
+  //   for (let i = 0; i < positionAttribute.count; i++) {
+  //     points.push(new THREE.Vector3().fromBufferAttribute(positionAttribute, i));
+  //   }
+  //   const result: THREE.Vector3[] = [];
+  //   for (let i = 0; i < n; i++) {
+  //     result.push(points[i % points.length].clone());
+  //   }
+  //   return normalise(result, 50);
+  // }
 
-  const halvorsen = (n: number): THREE.Vector3[] => {
-    const pts: THREE.Vector3[] = [];
-    let x = 0.1, y = 0, z = 0;
-    const a = 1.89;
-    const dt = 0.005;
-    for (let i = 0; i < n * 25; i++) {
-      const dx = -a * x - 4 * y - 4 * z - y * y;
-      const dy = -a * y - 4 * z - 4 * x - z * z;
-      const dz = -a * z - 4 * x - 4 * y - x * x;
-      x += dx * dt;
-      y += dy * dt;
-      z += dz * dt;
-      if (i > 200 && i % 25 === 0) {
-        pts.push(new THREE.Vector3(x, y, z));
-      }
-      if (pts.length >= n) break;
-    }
-    while(pts.length < n) pts.push(pts[Math.floor(Math.random()*pts.length)].clone());
-    return normalise(pts, 60);
-  }
+  // const halvorsen = (n: number): THREE.Vector3[] => {
+  //   const pts: THREE.Vector3[] = [];
+  //   let x = 0.1, y = 0, z = 0;
+  //   const a = 1.89;
+  //   const dt = 0.005;
+  //   for (let i = 0; i < n * 25; i++) {
+  //     const dx = -a * x - 4 * y - 4 * z - y * y;
+  //     const dy = -a * y - 4 * z - 4 * x - z * z;
+  //     const dz = -a * z - 4 * x - 4 * y - x * x;
+  //     x += dx * dt;
+  //     y += dy * dt;
+  //     z += dz * dt;
+  //     if (i > 200 && i % 25 === 0) {
+  //       pts.push(new THREE.Vector3(x, y, z));
+  //     }
+  //     if (pts.length >= n) break;
+  //   }
+  //   while(pts.length < n) pts.push(pts[Math.floor(Math.random()*pts.length)].clone());
+  //   return normalise(pts, 60);
+  // }
 
 
-  const dualHelix = (n: number): THREE.Vector3[] => {
-    const pts: THREE.Vector3[] = [];
-    const turns = 5;
-    const radius = 15;
-    const height = 40;
-    for (let i = 0; i < n; i++) {
-      const isSecondHelix = i % 2 === 0;
-      const angle = (i / n) * Math.PI * 2 * turns;
-      const y = (i / n) * height - height / 2;
-      const r = radius + (isSecondHelix ? 5 : -5);
-      const x = Math.cos(angle) * r;
-      const z = Math.sin(angle) * r;
-      pts.push(new THREE.Vector3(x, y, z));
-    }
-    return normalise(pts, 60);
-  }
+  // const dualHelix = (n: number): THREE.Vector3[] => {
+  //   const pts: THREE.Vector3[] = [];
+  //   const turns = 5;
+  //   const radius = 15;
+  //   const height = 40;
+  //   for (let i = 0; i < n; i++) {
+  //     const isSecondHelix = i % 2 === 0;
+  //     const angle = (i / n) * Math.PI * 2 * turns;
+  //     const y = (i / n) * height - height / 2;
+  //     const r = radius + (isSecondHelix ? 5 : -5);
+  //     const x = Math.cos(angle) * r;
+  //     const z = Math.sin(angle) * r;
+  //     pts.push(new THREE.Vector3(x, y, z));
+  //   }
+  //   return normalise(pts, 60);
+  // }
 
-  const deJong = (n: number): THREE.Vector3[] => {
-    const pts: THREE.Vector3[] = [];
-    let x = 0.1, y = 0.1;
-    const a = 1.4, b = -2.3, c = 2.4, d = -2.1;
-    for (let i = 0; i < n; i++) {
-      const xn = Math.sin(a * y) - Math.cos(b * x);
-      const yn = Math.sin(c * x) - Math.cos(d * y);
-      x = xn;
-      y = yn;
-      const z = Math.sin(x * y * 0.5);
-      pts.push(new THREE.Vector3(x, y, z));
-    }
-    return normalise(pts, 55);
-  }
+  // const deJong = (n: number): THREE.Vector3[] => {
+  //   const pts: THREE.Vector3[] = [];
+  //   let x = 0.1, y = 0.1;
+  //   const a = 1.4, b = -2.3, c = 2.4, d = -2.1;
+  //   for (let i = 0; i < n; i++) {
+  //     const xn = Math.sin(a * y) - Math.cos(b * x);
+  //     const yn = Math.sin(c * x) - Math.cos(d * y);
+  //     x = xn;
+  //     y = yn;
+  //     const z = Math.sin(x * y * 0.5);
+  //     pts.push(new THREE.Vector3(x, y, z));
+  //   }
+  //   return normalise(pts, 55);
+  // }
 
 
 
@@ -778,10 +778,22 @@ export default function MorphingShapes() {
       
       <div className="container" ref={containerRef}></div>
       <div className="vignette"></div>
-      <div className="instructions">Drag to explore</div>
-      <button className="morphButton" onClick={handleMorphClick}>
+      <div className="instructions">
+        <div className="mb-3 text-white text-xs">
+          <div className="mb-4 pb-4">자유롭게 움직여보세요</div>
+          <div className="text-[10px] opacity-80">            
+            <div className="text-[9px] opacity-70">
+              <div className="mb-0.5">🟡 따뜻한 색: 기쁨, 사랑, 만족, 희망</div>
+              <div className="mb-0.5">🔵 차가운 색: 슬픔, 우울, 불안, 외로움</div>
+              <div className="mb-0.5">🟣 보라/분홍: 설렘, 친밀감, 그리움</div>
+              <div>⚪ 연한 색: 중성적 감정, 놀라움</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* <button className="morphButton" onClick={handleMorphClick}>
         Morph Shape
-      </button>
+      </button> */}
     </>
   )
 }
