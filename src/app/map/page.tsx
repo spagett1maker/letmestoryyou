@@ -9,8 +9,8 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js'
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 
-const PARTICLE_COUNT = 15000;
-const SPARK_COUNT = 2000;
+const PARTICLE_COUNT = 30000; // 2배 증가
+const SPARK_COUNT = 4000;     // 2배 증가
 const STAR_COUNT = 7000;
 
 export default function MorphingShapes() {
@@ -163,12 +163,13 @@ export default function MorphingShapes() {
     const beta  = 8/3;    // β
     const kappa = 200;    // κ : 외력 세기
 
-    // 적분/샘플 파라미터 (test와 동일한 스타일)
+    // 적분/샘플 파라미터 - 더 긴 시간 동안 계산하여 더 넓은 궤도 탐색
     const dt = 0.01;     // 스텝
-    const every = 50;     // 몇 스텝마다 1점 샘플
-    const warmup = 1000;   // 초기 버닝 스텝 수(every 단위 기준이면 400*25=10000스텝쯤)
+    const every = 1;    // 매 스텝마다 샘플링
+    const warmup = 200;  // 워밍업 더 감소
+    const totalTime = n * every * 20 + warmup * every; // 20배 더 긴 시간 계산
 
-    for (let i = 0; i < n * every + warmup * every; i++) {
+    for (let i = 0; i < totalTime; i++) {
       const dx = sigma * (-x + y) + kappa * Math.sin(y / 5) * Math.sin(z / 5);
       const dy = -x * z + rho * x - y + kappa * Math.sin(x / 5) * Math.sin(z / 5);
       const dz = x * y - beta * z + kappa * Math.cos(y / 5) * Math.cos(x / 5);
@@ -186,7 +187,7 @@ export default function MorphingShapes() {
 
     // 부족하면 복제해서 채우기(네 다른 패턴과 동일한 처리)
     while (pts.length < n) pts.push(pts[(Math.random() * pts.length) | 0].clone());
-    return normalise(pts, 60);
+    return normalise(pts, 150); // 더 넓은 범위
   };
 
 
@@ -783,10 +784,9 @@ export default function MorphingShapes() {
           <div className="mb-4 pb-4">자유롭게 움직여보세요</div>
           <div className="text-[10px] opacity-80">            
             <div className="text-[9px] opacity-70">
-              <div className="mb-0.5">🟡 따뜻한 색: 기쁨, 사랑, 만족, 희망</div>
-              <div className="mb-0.5">🔵 차가운 색: 슬픔, 우울, 불안, 외로움</div>
-              <div className="mb-0.5">🟣 보라/분홍: 설렘, 친밀감, 그리움</div>
-              <div>⚪ 연한 색: 중성적 감정, 놀라움</div>
+              <div className="mb-0.5">🟢 초록 계열: 긍정적 감정 (기쁨, 사랑, 만족, 희망)</div>
+              <div className="mb-0.5">🔴 빨강 계열: 부정적 감정 (슬픔, 화남, 불안, 우울)</div>
+              <div>🔵 파랑 계열: 중립적 감정 (놀라움, 궁금함, 어리둥절)</div>
             </div>
           </div>
         </div>
