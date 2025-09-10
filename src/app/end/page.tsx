@@ -491,7 +491,7 @@ export default function SnowPage() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 border border-gray-800 rounded-lg p-4 bg-black/80">
           <div className="bg-black/80 text-white px-8 py-4 rounded-lg text-xl text-center">
             <p className="mb-4">선택한 감정:</p>
-            <p className="text-xl font-bold">{selectedEmotion}</p>
+            <p className="text-xl font-bold text-cyan-100">{selectedEmotion}</p>
             <p className="mt-4 text-xs text-gray-300 whitespace-nowrap">
               당신의 감정은 이곳에 잠시 머물다 자연스레 흘러갑니다. <br/>
               우리는 그 이야기를 붙잡지 않아요. <br/>

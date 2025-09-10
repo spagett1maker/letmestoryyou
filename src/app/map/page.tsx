@@ -166,8 +166,8 @@ export default function MorphingShapes() {
     // 적분/샘플 파라미터 - 더 긴 시간 동안 계산하여 더 넓은 궤도 탐색
     const dt = 0.01;     // 스텝
     const every = 1;    // 매 스텝마다 샘플링
-    const warmup = 200;  // 워밍업 더 감소
-    const totalTime = n * every * 20 + warmup * every; // 20배 더 긴 시간 계산
+    const warmup = 100;  // 워밍업 더 감소
+    const totalTime = n * every * 30 + warmup * every; // 20배 더 긴 시간 계산
 
     for (let i = 0; i < totalTime; i++) {
       const dx = sigma * (-x + y) + kappa * Math.sin(y / 5) * Math.sin(z / 5);
@@ -187,7 +187,7 @@ export default function MorphingShapes() {
 
     // 부족하면 복제해서 채우기(네 다른 패턴과 동일한 처리)
     while (pts.length < n) pts.push(pts[(Math.random() * pts.length) | 0].clone());
-    return normalise(pts, 150); // 더 넓은 범위
+    return normalise(pts, 100); // 더 넓은 범위
   };
 
 
@@ -195,43 +195,51 @@ export default function MorphingShapes() {
   //const PATTERNS = [torusKnot, halvorsen, dualHelix, deJong, lorenzSinForcing];
   const PATTERNS = [lorenzSinForcing];
 
-  // 감정 데이터 가져오기
-  useEffect(() => {
-    const fetchEmotions = async () => {
-      try {
-        const response = await fetch('/api/emotions');
-        if (response.ok) {
-          const data = await response.json();
-          console.log('감정 데이터 로드됨:', data);
-          
-          // 감정 데이터와 sentiment 데이터를 모두 처리
-          const processedData: { [key: string]: number } = {};
-          
-          // 기존 감정 데이터 처리
-          if (data.emotions) {
-            Object.assign(processedData, data.emotions);
-          }
-          
-          // sentiment 데이터 처리 (positive/negative 분류)
-          if (data.sentiments) {
-            Object.assign(processedData, data.sentiments);
-          }
-          
-          // 만약 다른 형태의 데이터 구조라면 여기서 처리
-          if (data.sentiment_analysis) {
-            Object.assign(processedData, data.sentiment_analysis);
-          }
-          
-          console.log('처리된 감정 데이터:', processedData);
-          setEmotionData(processedData);
+  // 감정 데이터 가져오기 함수
+  const fetchEmotions = useCallback(async () => {
+    try {
+      const response = await fetch('/api/emotions');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('감정 데이터 로드됨:', data);
+        
+        // 감정 데이터와 sentiment 데이터를 모두 처리
+        const processedData: { [key: string]: number } = {};
+        
+        // 기존 감정 데이터 처리
+        if (data.emotions) {
+          Object.assign(processedData, data.emotions);
         }
-      } catch (error) {
-        console.error('감정 데이터 가져오기 실패:', error);
+        
+        // sentiment 데이터 처리 (positive/negative 분류)
+        if (data.sentiments) {
+          Object.assign(processedData, data.sentiments);
+        }
+        
+        // 만약 다른 형태의 데이터 구조라면 여기서 처리
+        if (data.sentiment_analysis) {
+          Object.assign(processedData, data.sentiment_analysis);
+        }
+        
+        console.log('처리된 감정 데이터:', processedData);
+        setEmotionData(processedData);
       }
-    };
-    
-    fetchEmotions();
+    } catch (error) {
+      console.error('감정 데이터 가져오기 실패:', error);
+    }
   }, []);
+
+  // 초기 로드 및 10초마다 자동 업데이트
+  useEffect(() => {
+    // 초기 로드
+    fetchEmotions();
+    
+    // 10초마다 업데이트
+    const interval = setInterval(fetchEmotions, 10000);
+    
+    // 클린업
+    return () => clearInterval(interval);
+  }, [fetchEmotions]);
 
   // 감정 데이터가 로드되면 파티클에 색상 적용
   useEffect(() => {
@@ -402,12 +410,16 @@ export default function MorphingShapes() {
     
     console.log('파티클 개수:', particleCount, '감정 데이터:', emotionData);
     
-    // 모든 파티클을 흰색으로 초기화
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      colors[i3] = 1.0;     // r
-      colors[i3 + 1] = 1.0; // g
-      colors[i3 + 2] = 1.0; // b
+    // 이미 색상이 적용된 파티클은 유지하고, 새로운 파티클만 흰색으로 설정
+    // 초기에만 모든 파티클을 흰색으로 설정
+    if (!particles.userData.colorsInitialized) {
+      for (let i = 0; i < particleCount; i++) {
+        const i3 = i * 3;
+        colors[i3] = 1.0;     // r
+        colors[i3 + 1] = 1.0; // g
+        colors[i3 + 2] = 1.0; // b
+      }
+      particles.userData.colorsInitialized = true;
     }
     
     // 테스트: 처음 100개 파티클을 빨간색으로 설정
@@ -418,52 +430,61 @@ export default function MorphingShapes() {
       colors[i3 + 2] = 0.0; // b
     }
     
-    // 데이터베이스 감정 개수만큼 랜덤 파티클 선택해서 색상 변경
-    const emotionEntries = Object.entries(emotionData);
-    const usedIndices = new Set<number>();
-    let totalApplied = 0;
+    // 이미 적용된 감정 파티클 추적
+    if (!particles.userData.appliedEmotions) {
+      particles.userData.appliedEmotions = new Set();
+    }
     
-    // 감정 파티클의 크기를 3배로 키우기 위해 size 속성도 수정
+    // 새로운 감정 데이터만 처리
+    const emotionEntries = Object.entries(emotionData);
     const sizeAttribute = particles.geometry.attributes.size as THREE.BufferAttribute;
     const sizes = sizeAttribute.array as Float32Array;
     
-    emotionEntries.forEach(([emotion, emotionCount]) => {
-      for (let j = 0; j < emotionCount; j++) {
-        if (totalApplied >= particleCount - 100) break; // 테스트 파티클 영역 피하기
-        
-        // 아직 색상이 변경되지 않은 파티클 인덱스 랜덤 선택
-        let randomIndex;
-        let attempts = 0;
-        do {
-          randomIndex = Math.floor(Math.random() * (particleCount - 100)) + 100; // 100번째 이후부터 선택
-          attempts++;
-        } while (usedIndices.has(randomIndex) && attempts < 100);
-        
-        if (attempts >= 100) break;
-        
-        usedIndices.add(randomIndex);
-        
-        // 선택된 파티클에 감정 색상 적용
-        const i3 = randomIndex * 3;
-        const emotionColorSet = getEmotionColor(emotion);
-        const colorHex = emotionColorSet[Math.floor(Math.random() * emotionColorSet.length)];
-        const c = new THREE.Color(colorHex);
-        
-        colors[i3] = c.r;
-        colors[i3 + 1] = c.g;
-        colors[i3 + 2] = c.b;
-        
-        // 감정 파티클의 크기를 3배로 증가
-        sizes[randomIndex] *= 3.0;
-        
-        totalApplied++;
-      }
-    });
+    // 현재까지 적용된 총 감정 수 계산
+    const totalEmotionsInData = emotionEntries.reduce((sum, [, count]) => sum + count, 0);
+    const currentAppliedCount = particles.userData.appliedEmotions.size;
     
-    // size 속성 업데이트
-    sizeAttribute.needsUpdate = true;
+    // 새로운 감정이 있는 경우에만 처리
+    if (totalEmotionsInData > currentAppliedCount) {
+      const newEmotionsToAdd = totalEmotionsInData - currentAppliedCount;
+      let added = 0;
+      
+      emotionEntries.forEach(([emotion, emotionCount]) => {
+        for (let j = 0; j < emotionCount && added < newEmotionsToAdd; j++) {
+          // 아직 사용되지 않은 파티클 인덱스 찾기
+          let randomIndex;
+          let attempts = 0;
+          do {
+            randomIndex = Math.floor(Math.random() * (particleCount - 100)) + 100;
+            attempts++;
+          } while (particles.userData.appliedEmotions.has(randomIndex) && attempts < 100);
+          
+          if (attempts >= 100) break;
+          
+          particles.userData.appliedEmotions.add(randomIndex);
+          
+          // 감정 색상 적용
+          const i3 = randomIndex * 3;
+          const emotionColorSet = getEmotionColor(emotion);
+          const colorHex = emotionColorSet[Math.floor(Math.random() * emotionColorSet.length)];
+          const c = new THREE.Color(colorHex);
+          
+          colors[i3] = c.r;
+          colors[i3 + 1] = c.g;
+          colors[i3 + 2] = c.b;
+          
+          // 감정 파티클의 크기를 3.0으로 고정
+          sizes[randomIndex] = 10.0;
+          
+          added++;
+        }
+      });
+      
+      // 속성 업데이트
+      sizeAttribute.needsUpdate = true;
+    }
     
-    console.log('색상 적용된 파티클 수:', totalApplied + 100);
+    console.log('색상 적용된 파티클 수:', particles.userData.appliedEmotions.size + 100);
     colorAttribute.needsUpdate = true;
   }
 
@@ -782,11 +803,11 @@ export default function MorphingShapes() {
       <div className="instructions">
         <div className="mb-3 text-white text-xs">
           <div className="mb-4 pb-4">자유롭게 움직여보세요</div>
-          <div className="text-[10px] opacity-80">            
-            <div className="text-[9px] opacity-70">
-              <div className="mb-0.5">🟢 초록 계열: 긍정적 감정 (기쁨, 사랑, 만족, 희망)</div>
-              <div className="mb-0.5">🔴 빨강 계열: 부정적 감정 (슬픔, 화남, 불안, 우울)</div>
-              <div>🔵 파랑 계열: 중립적 감정 (놀라움, 궁금함, 어리둥절)</div>
+          <div className="text-[18px] opacity-80">            
+            <div className="text-[14px] opacity-70">
+              <div className="mb-0.5">🟢 긍정적 감정</div>
+              <div className="mb-0.5">🔴 부정적 감정</div>
+              <div>🔵 중립적 감정</div>
             </div>
           </div>
         </div>
