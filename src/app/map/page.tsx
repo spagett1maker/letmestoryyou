@@ -1,5 +1,6 @@
 'use client'
 
+import { Asterisk } from 'lucide-react';
 import { useEffect, useRef, useState, useCallback } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
@@ -187,7 +188,7 @@ export default function MorphingShapes() {
 
     // 부족하면 복제해서 채우기(네 다른 패턴과 동일한 처리)
     while (pts.length < n) pts.push(pts[(Math.random() * pts.length) | 0].clone());
-    return normalise(pts, 100); // 더 넓은 범위
+    return normalise(pts, 150); // 더 넓은 범위
   };
 
 
@@ -633,7 +634,7 @@ export default function MorphingShapes() {
 
     // Camera setup
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2500);
-    camera.position.set(0, 0, 80);
+    camera.position.set(30, 0, 50); // 더 가까이 이동 (z: 80 → 50)
 
     // Renderer setup
     rendererRef.current = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -650,7 +651,7 @@ export default function MorphingShapes() {
     controlsRef.current.maxDistance = 200;
     controlsRef.current.target.set(0, 0, 0);
     controlsRef.current.autoRotate = true;
-    controlsRef.current.autoRotateSpeed = 0.5;
+    controlsRef.current.autoRotateSpeed = 0.1;
 
     // Create objects
     starsRef.current = createStars();
@@ -752,9 +753,9 @@ export default function MorphingShapes() {
           font-size: 12px;
           text-align: left;
           pointer-events: none;
-          color: #d0b0ff;
+          color: #ffffff;
           background: rgba(18, 15, 40, 0.25);
-          border: 1px solid rgba(122, 70, 255, 0.28);
+          border: 1px solid rgba(173, 173, 173, 0.28);
           border-radius: 12px;
           backdrop-filter: blur(12px);
           z-index: 10;
@@ -801,15 +802,18 @@ export default function MorphingShapes() {
       <div className="container" ref={containerRef}></div>
       <div className="vignette"></div>
       <div className="instructions">
-        <div className="mb-3 text-white text-xs">
-          <div className="mb-4 pb-4">자유롭게 움직여보세요</div>
-          <div className="text-[18px] opacity-80">            
-            <div className="text-[14px] opacity-70">
-              <div className="mb-0.5">🟢 긍정적 감정</div>
-              <div className="mb-0.5">🔴 부정적 감정</div>
-              <div>🔵 중립적 감정</div>
+        <div className="mb-3 text-white text-xs border-cyan-100">
+          <div className="mb-6 pb-4 text-[18px]">자유롭게 움직여보세요</div>
+          <div className="text-[18px] opacity-80 mt-2">            
+            <div className="text-[14px] opacity-70 flex flex-row gap-8">
+              <div className="mb-0.5 flex items-center gap-2"><Asterisk className="stroke-3 text-green-500" /> 긍정적 감정</div>
+              <div className="mb-0.5 flex items-center gap-2"><Asterisk className="stroke-3 text-red-500" /> 부정적 감정</div>
+              <div className="mb-2 flex items-center gap-2"><Asterisk className="stroke-3 text-blue-500" /> 중립적 감정</div>
             </div>
           </div>
+          
+          {/* 실제 감정 데이터를 색상별로 표시 */}
+          
         </div>
       </div>
       {/* <button className="morphButton" onClick={handleMorphClick}>
