@@ -806,13 +806,54 @@ export default function MorphingShapes() {
           <div className="mb-6 pb-4 text-[18px]">자유롭게 움직여보세요</div>
           <div className="text-[18px] opacity-80 mt-2">            
             <div className="text-[14px] opacity-70 flex flex-row gap-8">
-              <div className="mb-0.5 flex items-center gap-2"><Asterisk className="stroke-3 text-green-500" /> 긍정적 감정</div>
-              <div className="mb-0.5 flex items-center gap-2"><Asterisk className="stroke-3 text-red-500" /> 부정적 감정</div>
-              <div className="mb-2 flex items-center gap-2"><Asterisk className="stroke-3 text-blue-500" /> 중립적 감정</div>
+              <div className="mb-0.5 flex items-center gap-2">
+                <Asterisk className="stroke-3 text-[#FFD700] -mr-3" /> 
+                <Asterisk className="stroke-3 text-[#FFA500] -mr-3" /> 
+                <Asterisk className="stroke-3 text-[#90EE90] -mr-3" /> 
+                <Asterisk className="stroke-3 text-[#32CD32] -mr-3" />
+                <Asterisk className="stroke-3 text-[#7CFC00] -mr-3" />
+                <Asterisk className="stroke-3 text-[#FF8C00] -mr-3" />
+                <Asterisk className="stroke-3 text-[#FFA500] -mr-3" />
+                <Asterisk className="stroke-3 text-[#FFB347] -mr-3" />
+                <Asterisk className="stroke-3 text-[#FFE135] -mr-3" />
+                <Asterisk className="stroke-3 text-[#DDA0DD]" />
+                긍정적 감정
+              </div>
+              <div className="mb-0.5 flex items-center gap-2">
+                <Asterisk className="stroke-3 text-[#4682B4] -mr-3" />
+                <Asterisk className="stroke-3 text-[#5F9EA0] -mr-3" />
+                <Asterisk className="stroke-3 text-[#708090] -mr-3" />
+                <Asterisk className="stroke-3 text-[#8B0000] -mr-3" />
+                <Asterisk className="stroke-3 text-[#B22222] -mr-3" />
+                <Asterisk className="stroke-3 text-[#DC143C] -mr-3" />
+                <Asterisk className="stroke-3 text-[#2F4F4F] -mr-3" />
+                <Asterisk className="stroke-3 text-[#696969] -mr-3" />
+                <Asterisk className="stroke-3 text-[#778899] -mr-3" />
+                <Asterisk className="stroke-3 text-[#FF4500] -mr-3" />
+                <Asterisk className="stroke-3 text-[#FF6347] -mr-3" />
+                <Asterisk className="stroke-3 text-[#CD5C5C] -mr-3" />
+                <Asterisk className="stroke-3 text-[#9370DB] -mr-3" />
+                <Asterisk className="stroke-3 text-[#8A2BE2] -mr-3" />
+                <Asterisk className="stroke-3 text-[#9932CC] -mr-3" />
+                <Asterisk className="stroke-3 text-[#6A5ACD] -mr-3" />
+                <Asterisk className="stroke-3 text-[#483D8B] -mr-3" />
+                <Asterisk className="stroke-3 text-[#4B0082]" />
+                부정적 감정
+              </div>
+              <div className="mb-2 flex items-center gap-2">
+                <Asterisk className="stroke-3 text-[#E6E6FA] -mr-3" />
+                <Asterisk className="stroke-3 text-[#D8BFD8] -mr-3" />
+                <Asterisk className="stroke-3 text-[#DDA0DD] -mr-3" />
+                <Asterisk className="stroke-3 text-[#B0E0E6] -mr-3" />
+                <Asterisk className="stroke-3 text-[#ADD8E6] -mr-3" />
+                <Asterisk className="stroke-3 text-[#87CEFA] -mr-3" />
+                <Asterisk className="stroke-3 text-[#F5DEB3] -mr-3" />
+                <Asterisk className="stroke-3 text-[#DEB887] -mr-3" />
+                <Asterisk className="stroke-3 text-[#D2B48C]" />
+                중립적 감정
+              </div>
             </div>
           </div>
-          
-          {/* 실제 감정 데이터를 색상별로 표시 */}
           
         </div>
       </div>
