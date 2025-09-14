@@ -46,6 +46,7 @@ interface Panel {
   answer: Answer
   isOld: boolean
   isDummy?: boolean
+  zIndex: number
 }
 
 interface DummyParticle {
@@ -271,6 +272,7 @@ export default function AnswerParticles() {
             answer: answer as unknown as Answer,
             isOld,
             isDummy: false,
+            zIndex: isOld ? 10 : 50 - index // 최근 답변일수록 높은 z-index
           }
         });
         
@@ -359,6 +361,7 @@ export default function AnswerParticles() {
       answer: particle.answer,
       isOld: particle.isOld,
       isDummy: particle.isDummy,
+      zIndex: particle.isOld ? 10 : 100 // 클릭으로 생성된 패널은 높은 z-index
     }
 
     setPanels((prev) => [...prev, newPanel])
@@ -450,7 +453,6 @@ export default function AnswerParticles() {
             </div>
           </div>
 
-          {/* Stats */}
           <div className="absolute bottom-4 left-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
             <div>Total Answers: {particles.length}</div>
             <div>Recent: {particles.filter((p) => !p.isOld).length}</div>
@@ -499,6 +501,7 @@ export default function AnswerParticles() {
               top: panel.y,
               width: panelWidth,
               height: panelHeight,
+              zIndex: panel.zIndex,
             }}
             drag={true}
             dragMomentum={false}
