@@ -939,7 +939,7 @@ export default function MorphingShapes() {
             
             {/* 중성적 감정 */}
             <div className="mb-2 flex flex-col items-start gap-1">
-              <div className="text-[9px] text-blue-400 font-semibold">중성적:</div>
+              <div className="text-[9px] text-blue-400 font-semibold">중립적:</div>
               <div className="flex flex-wrap gap-0.5">
                 <Asterisk className="stroke-2 text-[#E6E6FA]" size={10} />
                 <Asterisk className="stroke-2 text-[#D8BFD8]" size={10} />
