@@ -174,7 +174,6 @@ export default function AnswerParticles() {
         .from("answers")
         .select("id, answer_text, created_at, questions(question_text, question_number)")
         .order("created_at", { ascending: false })
-        .limit(5) // 최신 5개만 가져오기
 
       if (error) throw error
 
@@ -215,20 +214,23 @@ export default function AnswerParticles() {
 
       setParticles(allParticles as Particle[])
       
-      // 최신 5개 답변에 대해 자동으로 패널 생성
+      // 하루 지나지 않은 답변은 모두 표시, 404 답변은 3개만 표시
       if (data && data.length > 0) {
-        const recent5Answers = data.slice(0, 5);
+        const recentAnswers = data.filter(answer => !isOlderThanDay(answer.created_at));
+        const oldAnswers = data.filter(answer => isOlderThanDay(answer.created_at)).slice(0, 3);
+        const answersToShow = [...recentAnswers, ...oldAnswers];
         const panelWidth = isMobile ? Math.min(350, dimensions.width - 20) : 400
         const panelHeight = isMobile ? Math.min(280, dimensions.height - 100) : 300
         
         // 겹치지 않는 무작위 위치 생성
         const occupiedAreas: {x: number, y: number, width: number, height: number}[] = [];
         
-        const newPanels = recent5Answers.map((answer, index) => {
+        const newPanels = answersToShow.map((answer, index) => {
           let attempts = 0;
           let x: number, y: number;
+          const isOld = isOlderThanDay(answer.created_at);
           
-          // 겹치지 않는 위치를 찾을 때까지 시도
+          // 모든 패널(최신 + 404)에 대해 겹치지 않는 무작위 위치 생성
           do {
             x = Math.random() * (dimensions.width - panelWidth - 20) + 10;
             y = Math.random() * (dimensions.height - panelHeight - 20) + 10;
@@ -240,23 +242,34 @@ export default function AnswerParticles() {
             y + panelHeight + 20 > area.y
           ));
           
-          // 겹치지 않는 위치를 찾지 못하면 기본 격자 위치 사용
+          // 겹치지 않는 위치를 찾지 못하면 무작위 격자 위치 사용
           if (attempts >= 50) {
-            const offsetX = (index % 3) * (panelWidth + 20)
-            const offsetY = Math.floor(index / 3) * (panelHeight + 20)
-            x = Math.max(10, Math.min(dimensions.width - panelWidth - 10, 50 + offsetX));
-            y = Math.max(10, Math.min(dimensions.height - panelHeight - 10, 50 + offsetY));
+            // 완전히 무작위 격자 위치 생성
+            const gridCols = Math.floor((dimensions.width - 40) / (panelWidth + 20));
+            const gridRows = Math.floor((dimensions.height - 40) / (panelHeight + 20));
+            const maxGridPositions = gridCols * gridRows;
+            const randomGridIndex = Math.floor(Math.random() * maxGridPositions);
+            
+            const gridX = randomGridIndex % gridCols;
+            const gridY = Math.floor(randomGridIndex / gridCols);
+            
+            x = 20 + gridX * (panelWidth + 20) + Math.random() * 20 - 10; // ±10px 랜덤 오프셋
+            y = 20 + gridY * (panelHeight + 20) + Math.random() * 20 - 10;
+            
+            // 화면 경계 확인
+            x = Math.max(10, Math.min(dimensions.width - panelWidth - 10, x));
+            y = Math.max(10, Math.min(dimensions.height - panelHeight - 10, y));
           }
           
           // 사용된 영역 기록
           occupiedAreas.push({x, y, width: panelWidth, height: panelHeight});
           
           return {
-            id: Date.now() + index,
+            id: Date.now() + index + (isOld ? 10000 : 0), // 404 패널에 다른 ID 부여
             x,
             y,
             answer: answer as unknown as Answer,
-            isOld: isOlderThanDay(answer.created_at),
+            isOld,
             isDummy: false,
           }
         });
@@ -275,6 +288,15 @@ export default function AnswerParticles() {
       fetchAnswers()
     }
   }, [dimensions, isMobile, fetchAnswers])
+
+  // 10초마다 자동 업데이트
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAnswers()
+    }, 10000) // 10초마다 실행
+
+    return () => clearInterval(interval)
+  }, [fetchAnswers])
 
   // Animation loop
   const animate = useCallback(() => {
