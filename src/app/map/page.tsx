@@ -762,6 +762,38 @@ export default function MorphingShapes() {
           box-shadow: 0 4px 20px rgba(0,0,0,.45);
         }
 
+        .instructions-mobile {
+          position: fixed;
+          left: 8px;
+          bottom: 8px;
+          right: 8px;
+          padding: 8px 12px;
+          font-size: 10px;
+          text-align: left;
+          pointer-events: none;
+          color: #ffffff;
+          background: rgba(18, 15, 40, 0.35);
+          border: 1px solid rgba(173, 173, 173, 0.28);
+          border-radius: 8px;
+          backdrop-filter: blur(8px);
+          z-index: 10;
+          box-shadow: 0 2px 12px rgba(0,0,0,.4);
+          max-height: 200px;
+          overflow-y: auto;
+        }
+
+        @media (min-width: 768px) {
+          .instructions-mobile {
+            display: none;
+          }
+        }
+
+        @media (max-width: 767px) {
+          .instructions {
+            display: none;
+          }
+        }
+
         .morphButton {
           position: fixed;
           left: 50%;
@@ -801,6 +833,7 @@ export default function MorphingShapes() {
       
       <div className="container" ref={containerRef}></div>
       <div className="vignette"></div>
+      {/* Desktop Instructions */}
       <div className="instructions">
         <div className="mb-3 text-white text-xs border-cyan-100">
           <div className="mb-6 pb-4 text-[18px]">자유롭게 움직여보세요</div>
@@ -855,6 +888,71 @@ export default function MorphingShapes() {
             </div>
           </div>
           
+        </div>
+      </div>
+
+      {/* Mobile Instructions */}
+      <div className="instructions-mobile">
+        <div className="mb-2 text-white text-xs">
+          <div className="mb-3 text-[14px] text-center">자유롭게 움직여보세요</div>
+          <div className="text-[10px] opacity-80">
+            {/* 긍정적 감정 */}
+            <div className="mb-2 flex flex-col items-start gap-1">
+              <div className="text-[9px] text-green-400 font-semibold">긍정적:</div>
+              <div className="flex flex-wrap gap-0.5">
+                <Asterisk className="stroke-2 text-[#FFD700]" size={10} />
+                <Asterisk className="stroke-2 text-[#FFA500]" size={10} />
+                <Asterisk className="stroke-2 text-[#90EE90]" size={10} />
+                <Asterisk className="stroke-2 text-[#32CD32]" size={10} />
+                <Asterisk className="stroke-2 text-[#7CFC00]" size={10} />
+                <Asterisk className="stroke-2 text-[#FF8C00]" size={10} />
+                <Asterisk className="stroke-2 text-[#FFB347]" size={10} />
+                <Asterisk className="stroke-2 text-[#FFE135]" size={10} />
+                <Asterisk className="stroke-2 text-[#DDA0DD]" size={10} />
+              </div>
+            </div>
+            
+            {/* 부정적 감정 */}
+            <div className="mb-2 flex flex-col items-start gap-1">
+              <div className="text-[9px] text-red-400 font-semibold">부정적:</div>
+              <div className="flex flex-wrap gap-0.5">
+                <Asterisk className="stroke-2 text-[#4682B4]" size={10} />
+                <Asterisk className="stroke-2 text-[#5F9EA0]" size={10} />
+                <Asterisk className="stroke-2 text-[#708090]" size={10} />
+                <Asterisk className="stroke-2 text-[#8B0000]" size={10} />
+                <Asterisk className="stroke-2 text-[#B22222]" size={10} />
+                <Asterisk className="stroke-2 text-[#DC143C]" size={10} />
+                <Asterisk className="stroke-2 text-[#2F4F4F]" size={10} />
+                <Asterisk className="stroke-2 text-[#696969]" size={10} />
+                <Asterisk className="stroke-2 text-[#778899]" size={10} />
+                <Asterisk className="stroke-2 text-[#FF4500]" size={10} />
+                <Asterisk className="stroke-2 text-[#FF6347]" size={10} />
+                <Asterisk className="stroke-2 text-[#CD5C5C]" size={10} />
+                <Asterisk className="stroke-2 text-[#9370DB]" size={10} />
+                <Asterisk className="stroke-2 text-[#8A2BE2]" size={10} />
+                <Asterisk className="stroke-2 text-[#9932CC]" size={10} />
+                <Asterisk className="stroke-2 text-[#6A5ACD]" size={10} />
+                <Asterisk className="stroke-2 text-[#483D8B]" size={10} />
+                <Asterisk className="stroke-2 text-[#4B0082]" size={10} />
+              </div>
+            </div>
+            
+            {/* 중성적 감정 */}
+            <div className="mb-2 flex flex-col items-start gap-1">
+              <div className="text-[9px] text-blue-400 font-semibold">중성적:</div>
+              <div className="flex flex-wrap gap-0.5">
+                <Asterisk className="stroke-2 text-[#E6E6FA]" size={10} />
+                <Asterisk className="stroke-2 text-[#D8BFD8]" size={10} />
+                <Asterisk className="stroke-2 text-[#DDA0DD]" size={10} />
+                <Asterisk className="stroke-2 text-[#B0E0E6]" size={10} />
+                <Asterisk className="stroke-2 text-[#ADD8E6]" size={10} />
+                <Asterisk className="stroke-2 text-[#87CEFA]" size={10} />
+                <Asterisk className="stroke-2 text-[#F5DEB3]" size={10} />
+                <Asterisk className="stroke-2 text-[#DEB887]" size={10} />
+                <Asterisk className="stroke-2 text-[#D2B48C]" size={10} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       {/* <button className="morphButton" onClick={handleMorphClick}>
