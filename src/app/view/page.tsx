@@ -434,7 +434,7 @@ export default function AnswerParticles() {
           }} className="cursor-pointer absolute bottom-4 right-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm">
             <div>다음 질문</div>
           </div> */}
-          <div className="absolute top-4 right-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm max-w-xs">
+          {/* <div className="absolute top-4 right-4 z-50 bg-gray-800 text-white p-3 rounded border border-gray-600 text-sm max-w-xs">
             <div className="flex items-center gap-2 mb-2">
               <Monitor className="w-4 h-4 text-green-400" />
               <span>Desktop View</span>
@@ -455,7 +455,7 @@ export default function AnswerParticles() {
             <div>Total Answers: {particles.length}</div>
             <div>Recent: {particles.filter((p) => !p.isOld).length}</div>
             <div>Old: {particles.filter((p) => p.isOld).length}</div>
-          </div>
+          </div> */}
         </>
       )}
 
