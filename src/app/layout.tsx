@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import localFont from 'next/font/local'
+import { Analytics } from "@vercel/analytics/next"
 
 const pixelFont = localFont({
   src: '../../public/fonts/pixel.woff',
@@ -19,6 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Analytics />
       <body
         className={`${pixelFont.className} antialiased`}
       >
